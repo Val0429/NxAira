@@ -1,7 +1,7 @@
 ## Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
 
 cmake_minimum_required(VERSION 3.3.2)
-project(sample_analytics_plugin)
+project(NxAiraPlugin)
 
 set(metadataSdkDir "C:/Users/88693/Documents/Val/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk" CACHE PATH "C:/Users/88693/Documents/Val/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk")
 if(metadataSdkDir STREQUAL "")
@@ -59,16 +59,16 @@ target_link_libraries(nx_sdk PRIVATE nx_kit)
 target_compile_definitions(nx_sdk PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}) #< for nxLibContext()
 
 #--------------------------------------------------------------------------------------------------
-# Define sample_analytics_plugin lib, dynamic, depends on nx_kit and nx_sdk.
+# Define NxAiraPlugin lib, dynamic, depends on nx_kit and nx_sdk.
 
-set(SAMPLE_ANALYTICS_PLUGIN_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
-file(GLOB_RECURSE SAMPLE_ANALYTICS_PLUGIN_SRC CONFIGURE_DEPENDS
-    ${SAMPLE_ANALYTICS_PLUGIN_SRC_DIR}/*)
+set(NXAIRA_PLUGIN_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+file(GLOB_RECURSE NXAIRA_PLUGIN_SRC CONFIGURE_DEPENDS
+    ${NXAIRA_PLUGIN_SRC_DIR}/*)
 
-add_library(sample_analytics_plugin SHARED ${SAMPLE_ANALYTICS_PLUGIN_SRC})
-target_include_directories(sample_analytics_plugin PRIVATE ${SAMPLE_ANALYTICS_PLUGIN_SRC_DIR})
-target_link_libraries(sample_analytics_plugin PRIVATE nx_kit nx_sdk)
+add_library(NxAiraPlugin SHARED ${NXAIRA_PLUGIN_SRC})
+target_include_directories(NxAiraPlugin PRIVATE ${NXAIRA_PLUGIN_SRC_DIR})
+target_link_libraries(NxAiraPlugin PRIVATE nx_kit nx_sdk)
 
-target_compile_definitions(sample_analytics_plugin
+target_compile_definitions(NxAiraPlugin
     PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}
 )
