@@ -1,0 +1,5 @@
+**/*.tlog
+**/Debug
+**/Release
+
+sample_analytics_plugin/build
