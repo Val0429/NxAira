@@ -7,7 +7,7 @@
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
-namespace sample {
+namespace aira {
 
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
@@ -34,11 +34,11 @@ std::string Plugin::manifestString() const
 {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
-    "id": "nx.sample",
-    "name": "Sample",
-    "description": "A simple \"Hello, world!\" plugin that can be used as a template.",
+    "id": "aira.metadata",
+    "name": "Aira x NX metadata",
+    "description": "Aira Plugin",
     "version": "1.0.0",
-    "vendor": "Plugin vendor"
+    "vendor": "Aira Co."
 }
 )json";
 }

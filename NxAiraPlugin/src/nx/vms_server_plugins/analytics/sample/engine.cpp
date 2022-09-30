@@ -7,7 +7,7 @@
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
-namespace sample {
+namespace aira {
 
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;

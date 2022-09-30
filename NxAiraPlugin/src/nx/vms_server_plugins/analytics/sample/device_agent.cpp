@@ -2,6 +2,10 @@
 
 #include "device_agent.h"
 
+#define NX_DEBUG_ENABLE_OUTPUT true
+#include <nx/kit/debug.h>
+#include <nx/kit/utils.h>
+
 #include <chrono>
 
 #include <nx/sdk/analytics/helpers/event_metadata.h>
@@ -12,7 +16,7 @@
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
-namespace sample {
+namespace aira {
 
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
@@ -25,6 +29,8 @@ DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true)
 {
+    NX_PRINT << "I should have gotten something here!";
+    std::cout << "What1!" << std::endl;
 }
 
 DeviceAgent::~DeviceAgent()
@@ -50,10 +56,18 @@ std::string DeviceAgent::manifestString() const
             "name": "New track started"
         }
     ],
-    "objectTypes": [
+    "supportedTypes": [
         {
-            "id": ")json" + kHelloWorldObjectType + R"json(",
-            "name": "Hello, World!"
+            "objectTypeId": ")json" + kPersonObjectType + R"json(",
+            "name": "Person"
+        },
+        {
+            "objectTypeId": ")json" + kUpperClothesObjectType + R"json(",
+            "name": "Upper Clothes"
+        },
+        {
+            "objectTypeId": ")json" + kLowerClothesObjectType + R"json(",
+            "name": "Lower Clothes"
         }
     ]
 }
@@ -71,6 +85,7 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
     auto eventMetadataPacket = generateEventMetadataPacket();
     if (eventMetadataPacket)
     {
+        NX_PRINT << "Val Push!";
         // Send generated metadata packet to the Server.
         pushMetadataPacket(eventMetadataPacket.releasePtr());
     }
@@ -90,6 +105,8 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
  */
 bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPackets)
 {
+    NX_PRINT << "Val Pull!";
+    std::cout << "What..." << std::endl;
     metadataPackets->push_back(generateObjectMetadataPacket().releasePtr());
 
     return true; //< There were no errors while filling metadataPackets.
@@ -99,6 +116,7 @@ void DeviceAgent::doSetNeededMetadataTypes(
     nx::sdk::Result<void>* /*outValue*/,
     const nx::sdk::analytics::IMetadataTypes* /*neededMetadataTypes*/)
 {
+    /// initialization
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -146,7 +164,7 @@ Ptr<IMetadataPacket> DeviceAgent::generateObjectMetadataPacket()
     // ObjectMetadata contains information about an object on the frame.
     const auto objectMetadata = makePtr<ObjectMetadata>();
     // Set all required fields.
-    objectMetadata->setTypeId(kHelloWorldObjectType);
+    objectMetadata->setTypeId(kPersonObjectType);
     objectMetadata->setTrackId(m_trackId);
 
     // Calculate bounding box coordinates each frame so that it moves from the top left corner

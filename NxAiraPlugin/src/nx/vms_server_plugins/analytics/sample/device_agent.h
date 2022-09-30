@@ -10,7 +10,7 @@
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
-namespace sample {
+namespace aira {
 
 class DeviceAgent: public nx::sdk::analytics::ConsumingDeviceAgent
 {
@@ -36,7 +36,10 @@ private:
     nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateObjectMetadataPacket();
 
 private:
-    const std::string kHelloWorldObjectType = "nx.sample.helloWorld";
+    const std::string kPersonObjectType = "aira.face.person";
+    const std::string kUpperClothesObjectType = "aira.clothes.upper";
+    const std::string kLowerClothesObjectType = "aira.clothes.lower";
+
     const std::string kNewTrackEventType = "nx.sample.newTrack";
 
     /** Lenght of the the track (in frames). The value was chosen arbitrarily. */

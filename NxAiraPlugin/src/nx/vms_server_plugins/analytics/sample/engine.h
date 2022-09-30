@@ -9,7 +9,7 @@
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
-namespace sample {
+namespace aira {
 
 class Engine: public nx::sdk::analytics::Engine
 {
