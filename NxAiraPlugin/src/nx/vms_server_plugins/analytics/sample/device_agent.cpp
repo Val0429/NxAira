@@ -90,11 +90,8 @@ std::string DeviceAgent::manifestString() const
     // ]
 
 
-/**
- * Called when the Server sends a new uncompressed frame from a camera.
- */
-bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame)
-{
+// bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame)
+bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
     NX_PRINT << "Got Frame!";
     ++m_frameIndex;
     m_lastVideoFrameTimestampUs = videoFrame->timestampUs();

@@ -62,6 +62,7 @@ static std::string buildCapabilities() {
 std::string Engine::manifestString() const {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
+    "streamTypeFilter": "compressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
     {
