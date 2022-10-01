@@ -1,0 +1,1 @@
+tail -f "/c/Windows/System32/config/systemprofile/AppData/Local/Network Optix/Network Optix Media Server/log/log_file.log"

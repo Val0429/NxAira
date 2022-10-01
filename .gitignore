@@ -1,0 +1,5 @@
+**/*.tlog
+**/Debug
+**/Release
+
+NxAiraPlugin/build
