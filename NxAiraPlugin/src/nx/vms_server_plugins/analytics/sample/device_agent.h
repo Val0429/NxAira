@@ -2,8 +2,13 @@
 
 #pragma once
 
+#include <set>
+#include <thread>
+
 #include <nx/sdk/analytics/helpers/consuming_device_agent.h>
 #include <nx/sdk/helpers/uuid_helper.h>
+
+#include <nx/sdk/analytics/helpers/object_metadata.h>
 
 #include "engine.h"
 
@@ -21,8 +26,8 @@ public:
 protected:
     virtual std::string manifestString() const override;
 
-    virtual bool pushUncompressedVideoFrame(
-        const nx::sdk::analytics::IUncompressedVideoFrame* videoFrame) override;
+    virtual bool pushCompressedVideoFrame(
+        const nx::sdk::analytics::ICompressedVideoPacket* videoFrame) override;
 
     virtual bool pullMetadataPackets(
         std::vector<nx::sdk::analytics::IMetadataPacket*>* metadataPackets) override;
@@ -32,8 +37,8 @@ protected:
         const nx::sdk::analytics::IMetadataTypes* neededMetadataTypes) override;
 
 private:
-    nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateEventMetadataPacket();
-    nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateObjectMetadataPacket();
+    // nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateEventMetadataPacket();
+    // nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateObjectMetadataPacket();
 
 private:
     const std::string kPersonObjectType = "aira.face.person";
@@ -46,7 +51,16 @@ private:
     static constexpr int kTrackFrameCount = 256;
 
 private:
-    nx::sdk::Uuid m_trackId = nx::sdk::UuidHelper::randomUuid();
+    /// Val: For Test
+    mutable std::mutex m_mutex;
+
+    nx::sdk::Uuid trackIdByTrackIndex(int trackIndex);
+    nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateTestObjectMetadataPacket(int64_t frameTimestampUs);
+    std::vector<nx::sdk::Ptr<nx::sdk::analytics::ObjectMetadata>> generateTestObject(
+        const std::map<std::string, std::map<std::string, std::string>>& attributesByObjectType
+    );
+
+    std::vector<nx::sdk::Uuid> m_trackIds;
     int m_frameIndex = 0; /**< Used for generating the detection in the right place. */
     int m_trackIndex = 0; /**< Used in the description of the events. */
 

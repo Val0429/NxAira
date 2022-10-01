@@ -11,8 +11,9 @@
 
 #include <nx/sdk/analytics/helpers/event_metadata.h>
 #include <nx/sdk/analytics/helpers/event_metadata_packet.h>
-#include <nx/sdk/analytics/helpers/object_metadata.h>
 #include <nx/sdk/analytics/helpers/object_metadata_packet.h>
+
+#include "device_agent_manifest.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -21,6 +22,7 @@ namespace aira {
 
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
+
 
 /**
  * @param deviceInfo Various information about the related device, such as its id, vendor, model,
@@ -41,68 +43,92 @@ DeviceAgent::~DeviceAgent()
  *  @return JSON with the particular structure. Note that it is possible to fill in the values
  * that are not known at compile time, but should not depend on the DeviceAgent settings.
  */
-std::string DeviceAgent::manifestString() const
-{
-    // Tell the Server that the plugin can generate the events and objects of certain types.
-    // Id values are strings and should be unique. Format of ids:
-    // `{vendor_id}.{plugin_id}.{event_type_id/object_type_id}`.
-    //
-    // See the plugin manifest for the explanation of vendor_id and plugin_id.
-    return /*suppress newline*/ 1 + (const char*) R"json(
-{
-    "eventTypes": [
-        {
-            "id": ")json" + kNewTrackEventType + R"json(",
-            "name": "New track started"
-        }
-    ],
-    "objectTypes": [
-        {
-            "id": ")json" + kPersonObjectType + R"json(",
-            "name": "Person"
-        },
-        {
-            "id": ")json" + kUpperClothesObjectType + R"json(",
-            "name": "Upper Clothes"
-        },
-        {
-            "id": ")json" + kLowerClothesObjectType + R"json(",
-            "name": "Lower Clothes"
-        }
-    ]
-}
-)json";
+std::string DeviceAgent::manifestString() const {
+    return kDeviceAgentManifest;
 }
 
-    // "supportedTypes": [
-    //     {
-    //         "objectTypeId": ")json" + kPersonObjectType + R"json(",
-    //         "name": "Person"
-    //     },
-    //     {
-    //         "objectTypeId": ")json" + kUpperClothesObjectType + R"json(",
-    //         "name": "Upper Clothes"
-    //     },
-    //     {
-    //         "objectTypeId": ")json" + kLowerClothesObjectType + R"json(",
-    //         "name": "Lower Clothes"
-    //     }
-    // ]
+/**
+ * Val: For Test
+ */
+static constexpr int kTrackLength = 200;
+static constexpr float kMaxBoundingBoxWidth = 0.5F;
+static constexpr float kMaxBoundingBoxHeight = 0.5F;
+static constexpr float kFreeSpace = 0.1F;
 
+static Rect generateBoundingBox(int frameIndex, int trackIndex, int trackCount) {
+    Rect boundingBox;
+    boundingBox.width = std::min((1.0F - kFreeSpace) / trackCount, kMaxBoundingBoxWidth);
+    boundingBox.height = std::min(boundingBox.width, kMaxBoundingBoxHeight);
+    boundingBox.x = 1.0F / trackCount * trackIndex + kFreeSpace / (trackCount + 1);
+    boundingBox.y = 1.0F - boundingBox.height - (1.0F / kTrackLength) * (frameIndex % kTrackLength);
+
+    return boundingBox;
+}
+
+nx::sdk::Uuid DeviceAgent::trackIdByTrackIndex(int trackIndex) {
+    while (trackIndex >= m_trackIds.size())
+        m_trackIds.push_back(UuidHelper::randomUuid());
+
+    return m_trackIds[trackIndex];
+}
+
+std::vector<Ptr<ObjectMetadata>> DeviceAgent::generateTestObject(
+    const std::map<std::string, std::map<std::string, std::string>>& attributesByObjectType
+) {
+    std::vector<Ptr<ObjectMetadata>> result;
+
+    for (const auto& entry: attributesByObjectType) {
+        const std::string& objectTypeId = entry.first;
+        const std::map<std::string, std::string>& attributes = entry.second;
+
+        auto objectMetadata = makePtr<ObjectMetadata>();
+        objectMetadata->setTypeId(objectTypeId);
+        for (const auto& attribute: attributes) {
+            objectMetadata->addAttribute(
+                makePtr<Attribute>(attribute.first, attribute.second)
+            );
+        }
+        result.push_back(std::move(objectMetadata));
+    }
+
+    return result;
+}
+
+Ptr<IMetadataPacket> DeviceAgent::generateTestObjectMetadataPacket(int64_t frameTimestampUs) {
+    auto metadataPacket = makePtr<ObjectMetadataPacket>();
+    metadataPacket->setTimestampUs(frameTimestampUs);
+
+    std::vector<Ptr<ObjectMetadata>> objects;
+    {
+        const std::lock_guard<std::mutex> lock(m_mutex);
+        objects = generateTestObject(kObjectAttributes);
+    }
+
+    for (int i = 0; i < objects.size(); ++i) {
+        objects[i]->setBoundingBox(generateBoundingBox(m_frameIndex, i, objects.size()));
+        objects[i]->setTrackId(trackIdByTrackIndex(i));
+
+        metadataPacket->addItem(objects[i].get());
+    }
+
+    return metadataPacket;
+}
+/**
+ * Val: For Test End
+ */
 
 // bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame)
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
-    NX_PRINT << "Got Frame!";
     ++m_frameIndex;
-    m_lastVideoFrameTimestampUs = videoFrame->timestampUs();
-
-    auto eventMetadataPacket = generateEventMetadataPacket();
-    if (eventMetadataPacket)
-    {
-        NX_PRINT << "Val Push!";
-        // Send generated metadata packet to the Server.
-        pushMetadataPacket(eventMetadataPacket.releasePtr());
+    if ((m_frameIndex % kTrackLength) == 0) {
+        m_trackIds.clear();
     }
+
+    Ptr<IMetadataPacket> objectMetadataPacket = generateTestObjectMetadataPacket(
+        videoPacket->timestampUs()
+    );
+
+    pushMetadataPacket(objectMetadataPacket.releasePtr());
 
     return true; //< There were no errors while processing the video frame.
 }
@@ -120,7 +146,7 @@ bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPa
 bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPackets)
 {
     NX_PRINT << "Val Pull!";
-    metadataPackets->push_back(generateObjectMetadataPacket().releasePtr());
+    // metadataPackets->push_back(generateObjectMetadataPacket().releasePtr());
 
     return true; //< There were no errors while filling metadataPackets.
 }
@@ -135,65 +161,65 @@ void DeviceAgent::doSetNeededMetadataTypes(
 //-------------------------------------------------------------------------------------------------
 // private
 
-Ptr<IMetadataPacket> DeviceAgent::generateEventMetadataPacket()
-{
-    // Generate event every kTrackFrameCount'th frame.
-    if (m_frameIndex % kTrackFrameCount != 0)
-        return nullptr;
+// Ptr<IMetadataPacket> DeviceAgent::generateEventMetadataPacket()
+// {
+//     // Generate event every kTrackFrameCount'th frame.
+//     if (m_frameIndex % kTrackFrameCount != 0)
+//         return nullptr;
 
-    // EventMetadataPacket contains arbitrary number of EventMetadata.
-    const auto eventMetadataPacket = makePtr<EventMetadataPacket>();
-    // Bind event metadata packet to the last video frame using a timestamp.
-    eventMetadataPacket->setTimestampUs(m_lastVideoFrameTimestampUs);
-    // Zero duration means that the event is not sustained, but momental.
-    eventMetadataPacket->setDurationUs(0);
+//     // EventMetadataPacket contains arbitrary number of EventMetadata.
+//     const auto eventMetadataPacket = makePtr<EventMetadataPacket>();
+//     // Bind event metadata packet to the last video frame using a timestamp.
+//     eventMetadataPacket->setTimestampUs(m_lastVideoFrameTimestampUs);
+//     // Zero duration means that the event is not sustained, but momental.
+//     eventMetadataPacket->setDurationUs(0);
 
-    // EventMetadata contains an information about event.
-    const auto eventMetadata = makePtr<EventMetadata>();
-    // Set all required fields.
-    eventMetadata->setTypeId(kNewTrackEventType);
-    eventMetadata->setIsActive(true);
-    eventMetadata->setCaption("New sample plugin track started");
-    eventMetadata->setDescription("New track #" + std::to_string(m_trackIndex) + " started");
+//     // EventMetadata contains an information about event.
+//     const auto eventMetadata = makePtr<EventMetadata>();
+//     // Set all required fields.
+//     eventMetadata->setTypeId(kNewTrackEventType);
+//     eventMetadata->setIsActive(true);
+//     eventMetadata->setCaption("New sample plugin track started");
+//     eventMetadata->setDescription("New track #" + std::to_string(m_trackIndex) + " started");
 
-    eventMetadataPacket->addItem(eventMetadata.get());
+//     eventMetadataPacket->addItem(eventMetadata.get());
 
-    // Generate index and track id for the next track.
-    ++m_trackIndex;
-    m_trackId = nx::sdk::UuidHelper::randomUuid();
+//     // Generate index and track id for the next track.
+//     ++m_trackIndex;
+//     m_trackId = nx::sdk::UuidHelper::randomUuid();
 
-    return eventMetadataPacket;
-}
+//     return eventMetadataPacket;
+// }
 
-Ptr<IMetadataPacket> DeviceAgent::generateObjectMetadataPacket()
-{
-    // ObjectMetadataPacket contains arbitrary number of ObjectMetadata.
-    const auto objectMetadataPacket = makePtr<ObjectMetadataPacket>();
+// Ptr<IMetadataPacket> DeviceAgent::generateObjectMetadataPacket()
+// {
+//     // ObjectMetadataPacket contains arbitrary number of ObjectMetadata.
+//     const auto objectMetadataPacket = makePtr<ObjectMetadataPacket>();
 
-    // Bind the object metadata to the last video frame using a timestamp.
-    objectMetadataPacket->setTimestampUs(m_lastVideoFrameTimestampUs);
-    objectMetadataPacket->setDurationUs(0);
+//     // Bind the object metadata to the last video frame using a timestamp.
+//     objectMetadataPacket->setTimestampUs(m_lastVideoFrameTimestampUs);
+//     objectMetadataPacket->setDurationUs(0);
 
-    // ObjectMetadata contains information about an object on the frame.
-    const auto objectMetadata = makePtr<ObjectMetadata>();
-    // Set all required fields.
-    objectMetadata->setTypeId(kPersonObjectType);
-    objectMetadata->setTrackId(m_trackId);
+//     // ObjectMetadata contains information about an object on the frame.
+//     const auto objectMetadata = makePtr<ObjectMetadata>();
+//     // Set all required fields.
+//     objectMetadata->setTypeId(kPersonObjectType);
+//     objectMetadata->setTrackId(m_trackId);
 
-    // Calculate bounding box coordinates each frame so that it moves from the top left corner
-    // to the bottom right corner during kTrackFrameCount frames.
-    static constexpr float d = 0.5F / kTrackFrameCount;
-    static constexpr float width = 0.5F;
-    static constexpr float height = 0.5F;
-    const int frameIndexInsideTrack = m_frameIndex % kTrackFrameCount;
-    const float x = d * frameIndexInsideTrack;
-    const float y = d * frameIndexInsideTrack;
-    objectMetadata->setBoundingBox(Rect(x, y, width, height));
+//     // Calculate bounding box coordinates each frame so that it moves from the top left corner
+//     // to the bottom right corner during kTrackFrameCount frames.
+//     static constexpr float d = 0.5F / kTrackFrameCount;
+//     static constexpr float width = 0.5F;
+//     static constexpr float height = 0.5F;
+//     const int frameIndexInsideTrack = m_frameIndex % kTrackFrameCount;
+//     const float x = d * frameIndexInsideTrack;
+//     const float y = d * frameIndexInsideTrack;
+//     objectMetadata->setBoundingBox(Rect(x, y, width, height));
 
-    objectMetadataPacket->addItem(objectMetadata.get());
+//     objectMetadataPacket->addItem(objectMetadata.get());
 
-    return objectMetadataPacket;
-}
+//     return objectMetadataPacket;
+// }
 
 } // namespace sample
 } // namespace analytics
