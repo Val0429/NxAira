@@ -30,8 +30,7 @@ DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true)
 {
-    NX_PRINT << "I should have gotten something here!";
-    std::cout << "What1!" << std::endl;
+    // NX_PRINT << "I should have gotten something here!";
 }
 
 DeviceAgent::~DeviceAgent()
@@ -80,6 +79,7 @@ std::string DeviceAgent::manifestString() const
  */
 bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame)
 {
+    NX_PRINT << "Got Frame!";
     ++m_frameIndex;
     m_lastVideoFrameTimestampUs = videoFrame->timestampUs();
 
@@ -107,7 +107,6 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
 bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPackets)
 {
     NX_PRINT << "Val Pull!";
-    std::cout << "What..." << std::endl;
     metadataPackets->push_back(generateObjectMetadataPacket().releasePtr());
 
     return true; //< There were no errors while filling metadataPackets.
