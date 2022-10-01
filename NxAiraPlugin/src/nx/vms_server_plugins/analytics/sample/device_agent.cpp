@@ -2,7 +2,8 @@
 
 #include "device_agent.h"
 
-#define NX_DEBUG_ENABLE_OUTPUT true
+#define NX_PRINT_PREFIX (this->logUtils.printPrefix)
+// #define NX_DEBUG_ENABLE_OUTPUT true
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
 
