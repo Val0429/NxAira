@@ -2,7 +2,11 @@
 
 #include "plugin.h"
 
+#include <nx/kit/debug.h>
+#include <nx/kit/utils.h>
+
 #include "engine.h"
+#include "ini.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -17,19 +21,6 @@ Result<IEngine*> Plugin::doObtainEngine()
     return new Engine();
 }
 
-/**
- * JSON with the particular structure. Note that it is possible to fill in the values that are not
- * known at compile time.
- *
- * - id: Unique identifier for a plugin with format "{vendor_id}.{plugin_id}", where
- *     {vendor_id} is the unique identifier of the plugin creator (person or company name) and
- *     {plugin_id} is the unique (for a specific vendor) identifier of the plugin.
- * - name: A human-readable short name of the plugin (displayed in the "Camera Settings" window
- *     of the Client).
- * - description: Description of the plugin in a few sentences.
- * - version: Version of the plugin.
- * - vendor: Plugin creator (person or company) name.
- */
 std::string Plugin::manifestString() const
 {
     return /*suppress newline*/ 1 + (const char*) R"json(
@@ -58,7 +49,7 @@ extern "C" NX_PLUGIN_API nx::sdk::IPlugin* createNxPlugin()
     return new Plugin();
 }
 
-} // namespace sample
+} // namespace aira
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx

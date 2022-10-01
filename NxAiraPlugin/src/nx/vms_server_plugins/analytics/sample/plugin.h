@@ -12,8 +12,12 @@ namespace aira {
 
 class Plugin: public nx::sdk::analytics::Plugin
 {
+public:
+    Plugin() = default;
+
 protected:
     virtual nx::sdk::Result<nx::sdk::analytics::IEngine*> doObtainEngine() override;
+    virtual std::string instanceId() const override { return "nx.aira"; }
     virtual std::string manifestString() const override;
 };
 

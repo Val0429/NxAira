@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.3.2)
 project(NxAiraPlugin)
 
-set(metadataSdkDir "C:/Users/88693/Documents/Val/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk" CACHE PATH "C:/Users/88693/Documents/Val/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk")
+set(metadataSdkDir "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk" CACHE PATH "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk")
 if(metadataSdkDir STREQUAL "")
     set(metadataSdkDir ${CMAKE_CURRENT_LIST_DIR}/../..) #< Assume building samples inside the SDK.
     if(NOT EXISTS ${metadataSdkDir}/src/nx/sdk OR NOT EXISTS ${metadataSdkDir}/nx_kit/src/nx/kit)

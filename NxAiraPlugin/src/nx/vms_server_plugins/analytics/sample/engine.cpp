@@ -1,8 +1,8 @@
 // Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
 
 #include "engine.h"
-
 #include "device_agent.h"
+#include "ini.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -20,6 +20,14 @@ Engine::Engine():
 
 Engine::~Engine()
 {
+}
+
+static std::string buildCapabilities()
+{
+    if (ini().deviceDependent)
+        return "deviceDependent";
+
+    return "";
 }
 
 /**
