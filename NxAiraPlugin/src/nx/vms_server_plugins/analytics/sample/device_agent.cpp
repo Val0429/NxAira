@@ -56,23 +56,39 @@ std::string DeviceAgent::manifestString() const
             "name": "New track started"
         }
     ],
-    "supportedTypes": [
+    "objectTypes": [
         {
-            "objectTypeId": ")json" + kPersonObjectType + R"json(",
+            "id": ")json" + kPersonObjectType + R"json(",
             "name": "Person"
         },
         {
-            "objectTypeId": ")json" + kUpperClothesObjectType + R"json(",
+            "id": ")json" + kUpperClothesObjectType + R"json(",
             "name": "Upper Clothes"
         },
         {
-            "objectTypeId": ")json" + kLowerClothesObjectType + R"json(",
+            "id": ")json" + kLowerClothesObjectType + R"json(",
             "name": "Lower Clothes"
         }
     ]
 }
 )json";
 }
+
+    // "supportedTypes": [
+    //     {
+    //         "objectTypeId": ")json" + kPersonObjectType + R"json(",
+    //         "name": "Person"
+    //     },
+    //     {
+    //         "objectTypeId": ")json" + kUpperClothesObjectType + R"json(",
+    //         "name": "Upper Clothes"
+    //     },
+    //     {
+    //         "objectTypeId": ")json" + kLowerClothesObjectType + R"json(",
+    //         "name": "Lower Clothes"
+    //     }
+    // ]
+
 
 /**
  * Called when the Server sends a new uncompressed frame from a camera.
