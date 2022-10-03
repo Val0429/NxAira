@@ -76,7 +76,7 @@ std::string Engine::manifestString() const {
                 [
                     {
                         "type": "ComboBox",
-                        "name": "Protocol",
+                        "name": ")json" + kAirafaceProtocolSetting + R"json(",
                         "caption": "Protocol",
                         "defaultValue": "HTTPS",
                         "range": [
@@ -86,13 +86,13 @@ std::string Engine::manifestString() const {
                     },
                     {
                         "type": "TextField",
-                        "name": "IP",
+                        "name": ")json" + kAirafaceIPSetting + R"json(",
                         "caption": "IP",
                         "defaultValue": "localhost"
                     },
                     {
                         "type": "SpinBox",
-                        "name": "Port",
+                        "name": ")json" + kAirafacePortSetting + R"json(",
                         "caption": "Port",
                         "defaultValue": 8888,
                         "minValue": 0,
@@ -100,13 +100,13 @@ std::string Engine::manifestString() const {
                     },
                     {
                         "type": "TextField",
-                        "name": "Account",
+                        "name": ")json" + kAirafaceAccountSetting + R"json(",
                         "caption": "Account",
                         "defaultValue": "Admin"
                     },
                     {
                         "type": "TextField",
-                        "name": "Password",
+                        "name": ")json" + kAirafacePasswordSetting + R"json(",
                         "caption": "Password",
                         "defaultValue": "",
                         "validationErrorMessage": "Password is required.",

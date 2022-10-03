@@ -9,6 +9,7 @@ namespace vms_server_plugins {
 namespace analytics {
 namespace aira {
 
+
 static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const char*) R"json(
 {
     "supportedTypes":

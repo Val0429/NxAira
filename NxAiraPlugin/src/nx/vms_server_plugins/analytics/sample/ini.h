@@ -8,6 +8,14 @@ namespace vms_server_plugins {
 namespace analytics {
 namespace aira {
 
+/// settings
+const std::string kAirafaceProtocolSetting = "AirafaceProtocol";
+const std::string kAirafaceIPSetting = "AirafaceIP";
+const std::string kAirafacePortSetting = "AirafacePort";
+const std::string kAirafaceAccountSetting = "Account";
+const std::string kAirafacePasswordSetting = "Password";
+
+
 struct Ini: public nx::kit::IniConfig
 {
     Ini(): IniConfig("nxaira.ini") { reload(); }

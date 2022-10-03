@@ -26,15 +26,24 @@ using namespace nx::sdk::analytics;
 
 
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
-    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true) {}
+    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true) {
+        NX_PRINT << "What's the problem...";
+    }
 
 DeviceAgent::~DeviceAgent() {}
 
 std::string DeviceAgent::manifestString() const {
+    NX_PRINT << "What!!";
     return kDeviceAgentManifest;
 }
 
+Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
+    std::map<std::string, std::string> settings = currentSettings();
+    NX_PRINT << "Hihi: " << settings[kAirafaceAccountSetting];
+}
+
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
+    NX_PRINT << "Hihi2";
     return true; // no errors
 }
 
