@@ -14,6 +14,7 @@
 #include <nx/sdk/analytics/helpers/object_metadata.h>
 #include <nx/sdk/analytics/helpers/object_metadata_packet.h>
 
+#include "ini.h"
 #include "device_agent_manifest.h"
 
 namespace nx {
@@ -26,20 +27,23 @@ using namespace nx::sdk::analytics;
 
 
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
-    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true) {
-        NX_PRINT << "What's the problem...";
-    }
+    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true) {}
 
 DeviceAgent::~DeviceAgent() {}
 
 std::string DeviceAgent::manifestString() const {
-    NX_PRINT << "What!!";
     return kDeviceAgentManifest;
 }
 
 Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     std::map<std::string, std::string> settings = currentSettings();
-    NX_PRINT << "Hihi: " << settings[kAirafaceAccountSetting];
+
+    // Val: Todo connect AiraFace
+    // settings[kAirafaceAccountSetting];
+    // Convert Type
+    // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
+
+    return nullptr;
 }
 
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
