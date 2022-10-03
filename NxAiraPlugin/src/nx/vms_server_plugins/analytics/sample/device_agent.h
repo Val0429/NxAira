@@ -57,7 +57,7 @@ private:
     nx::sdk::Uuid trackIdByTrackIndex(int trackIndex);
     nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket> generateTestObjectMetadataPacket(int64_t frameTimestampUs);
     std::vector<nx::sdk::Ptr<nx::sdk::analytics::ObjectMetadata>> generateTestObject(
-        const std::map<std::string, std::map<std::string, std::string>>& attributesByObjectType
+        const std::vector<std::vector<std::string>>& attributesByObjectType
     );
 
     std::vector<nx::sdk::Uuid> m_trackIds;

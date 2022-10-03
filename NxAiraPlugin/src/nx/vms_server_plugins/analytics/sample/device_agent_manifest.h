@@ -72,42 +72,42 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
 }
 )json";
 
-const std::map<std::string, std::map<std::string, std::string>> kObjectAttributes = {
-    {
-        "nx.base.Person",
-        {
-            {"Gender", "Man"},
-            {"Age", "Adult"},
-            {"Name", "Frank Li"},
-            {"Weapon", "false"},
-            {"Top Clothing Color", "White"},
-            {"Bottom Clothing Color", "Blue"}
-        }
-    }
-};
-
-// const std::vector<std::vector<std::string>> kObjectAttributes = {
+// const std::map<std::string, std::map<std::string, std::string>> kObjectAttributes = {
 //     {
+//         "nx.base.Person",
 //         {
-//             "nx.base.Person",
-//                 {"Gender", "Man"},
-//                 {"Age", "Adult"},
-//                 {"Name", "Frank Li"},
-//                 {"Weapon", "false"},
-//                 {"Top Clothing Color", "White"},
-//                 {"Bottom Clothing Color", "Blue"}
-//         },
-//         {
-//             "nx.base.Person",
-//                 {"Gender", "Man"},
-//                 {"Age", "Adult"},
-//                 {"Name", "Tulip Lin"},
-//                 {"Weapon", "true"},
-//                 {"Top Clothing Color", "Blue"},
-//                 {"Bottom Clothing Color", "Black"}
+//             {"Gender", "Man"},
+//             {"Age", "Adult"},
+//             {"Name", "Frank Li"},
+//             {"Weapon", "false"},
+//             {"Top Clothing Color", "White"},
+//             {"Bottom Clothing Color", "Blue"}
 //         }
 //     }
 // };
+
+const std::vector<std::vector<std::string>> kObjectAttributes = {
+    {
+        {
+            "nx.base.Person",
+                "Gender", "Man",
+                "Age", "Adult",
+                "Name", "Frank Li",
+                "Weapon", "false",
+                "Top Clothing Color", "White",
+                "Bottom Clothing Color", "Blue"
+        },
+        {
+            "nx.base.Person",
+                "Gender", "Man",
+                "Age", "Adult",
+                "Name", "Tulip Lin",
+                "Weapon", "true",
+                "Top Clothing Color", "Blue",
+                "Bottom Clothing Color", "Black"
+        }
+    }
+};
 
 } // namespace aira
 } // namespace analytics

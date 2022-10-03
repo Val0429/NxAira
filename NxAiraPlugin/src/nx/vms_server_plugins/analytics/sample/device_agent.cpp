@@ -73,19 +73,18 @@ nx::sdk::Uuid DeviceAgent::trackIdByTrackIndex(int trackIndex) {
 }
 
 std::vector<Ptr<ObjectMetadata>> DeviceAgent::generateTestObject(
-    const std::map<std::string, std::map<std::string, std::string>>& attributesByObjectType
+    const std::vector<std::vector<std::string>>& attributesByObjectType
 ) {
     std::vector<Ptr<ObjectMetadata>> result;
 
-    for (const auto& entry: attributesByObjectType) {
-        const std::string& objectTypeId = entry.first;
-        const std::map<std::string, std::string>& attributes = entry.second;
-
+    for (const auto& element: attributesByObjectType) {
+        const std::string& objectTypeId = element[0];
         auto objectMetadata = makePtr<ObjectMetadata>();
         objectMetadata->setTypeId(objectTypeId);
-        for (const auto& attribute: attributes) {
+
+        for (size_t i=1; i<element.size(); i+=2) {
             objectMetadata->addAttribute(
-                makePtr<Attribute>(attribute.first, attribute.second)
+                makePtr<Attribute>(element[i], element[i+1])
             );
         }
         result.push_back(std::move(objectMetadata));
