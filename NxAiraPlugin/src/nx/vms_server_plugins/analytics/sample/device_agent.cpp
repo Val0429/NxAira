@@ -13,6 +13,7 @@
 #include <nx/sdk/analytics/helpers/event_metadata_packet.h>
 #include <nx/sdk/analytics/helpers/object_metadata.h>
 #include <nx/sdk/analytics/helpers/object_metadata_packet.h>
+#include <nx/sdk/analytics/i_motion_metadata_packet.h>
 
 #include "ini.h"
 #include "device_agent_manifest.h"
@@ -27,7 +28,9 @@ using namespace nx::sdk::analytics;
 
 
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
-    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true) {}
+    ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
+    motionProvider(*this)
+    {}
 
 DeviceAgent::~DeviceAgent() {}
 
@@ -47,7 +50,17 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
 }
 
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
-    NX_PRINT << "Hihi2";
+    bool motion_detected = detectMotion(videoPacket);
+    NX_PRINT << "has motion?" << motion_detected;
+
+    Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
+    if (metadata) {
+        auto metadataPacket = makePtr<ObjectMetadataPacket>();
+        metadataPacket->setTimestampUs(videoPacket->timestampUs());
+        metadataPacket->addItem(metadata.get());
+        pushMetadataPacket(metadataPacket.releasePtr());
+    }
+
     return true; // no errors
 }
 
@@ -59,6 +72,36 @@ void DeviceAgent::doSetNeededMetadataTypes(
     nx::sdk::Result<void>* /*outValue*/,
     const nx::sdk::analytics::IMetadataTypes* /*neededMetadataTypes*/) {
     /// initialization
+}
+
+/// Private Helpers
+bool DeviceAgent::detectMotion(const ICompressedVideoPacket* videoPacket) {
+    Ptr<IList<IMetadataPacket>> metadataPacketList = videoPacket->metadataList();
+    if (!metadataPacketList) return false;
+
+    const int metadataPacketCount = metadataPacketList->count();
+    NX_OUTPUT << "Received " << metadataPacketCount << " metadata packet(s) with the frame.";
+    /// no packets
+    if (metadataPacketCount == 0) return false;
+
+    for (int i=0; i<metadataPacketCount; i++) {
+        const auto metadataPacket = metadataPacketList->at(i);
+        /// sanity check
+        if (!NX_KIT_ASSERT(metadataPacket)) continue;
+
+        const auto motionPacket = metadataPacket->queryInterface<IMotionMetadataPacket>();
+        /// not motion
+        if (!motionPacket) continue;
+
+        /// no motion
+        if (motionPacket->isEmpty()) continue;
+
+        // int columns = motionPacket->columnCount();
+        // int rows = motionPacket->rowCount();
+        // NX_PRINT << "column:" << columns << ", " << rows;
+        return true;
+    }
+    return false;
 }
 
 } // namespace aira

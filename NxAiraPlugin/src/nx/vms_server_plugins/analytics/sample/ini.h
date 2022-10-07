@@ -9,6 +9,7 @@ namespace analytics {
 namespace aira {
 
 /// settings
+const std::string kAirafaceLicenseSetting = "AirafaceLicense";
 const std::string kAirafaceProtocolSetting = "AirafaceProtocol";
 const std::string kAirafaceIPSetting = "AirafaceIP";
 const std::string kAirafacePortSetting = "AirafacePort";

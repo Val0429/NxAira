@@ -9,6 +9,7 @@
 #include <nx/sdk/helpers/uuid_helper.h>
 
 #include "engine.h"
+#include "DeviceAgentHelper/device_agent_motion_face_provider.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -34,6 +35,12 @@ protected:
     virtual void doSetNeededMetadataTypes(
         nx::sdk::Result<void>* outValue,
         const nx::sdk::analytics::IMetadataTypes* neededMetadataTypes) override;
+
+private:
+    bool detectMotion(const nx::sdk::analytics::ICompressedVideoPacket* videoPacket);
+
+private:
+    DeviceAgentMotionFaceProvider motionProvider;
 };
 
 } // namespace sample

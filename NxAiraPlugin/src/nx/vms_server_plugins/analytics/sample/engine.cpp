@@ -59,16 +59,30 @@ static std::string buildCapabilities() {
  * @return JSON with the particular structure. Note that it is possible to fill in the values
  *     that are not known at compile time, but should not depend on the Engine settings.
  */
+/// metadata_sdk\src\nx\sdk\settings_model.md
 std::string Engine::manifestString() const {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
-    "streamTypeFilter": "compressedVideo",
+    "streamTypeFilter": "motion|compressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
     {
         "type": "Settings",
         "items":
         [
+            {
+                "type": "GroupBox",
+                "caption": "AiraFace License",
+                "items":
+                [
+                    {
+                        "type": "TextField",
+                        "name": ")json" + kAirafaceLicenseSetting + R"json(",
+                        "caption": "License",
+                        "defaultValue": ""
+                    }
+                ]
+            },
             {
                 "type": "GroupBox",
                 "caption": "AiraFace Configuration",
