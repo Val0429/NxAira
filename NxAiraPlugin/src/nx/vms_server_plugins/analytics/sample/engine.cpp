@@ -174,9 +174,11 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
 
     NX_PRINT << "Sent request!";
     auto response = server.login("211.75.111.228", "82", "Admin", "123456");
-    NX_PRINT << "request end!" << response->get();
+    auto res_maintain = server.maintain();
+    NX_PRINT << "request end!" << res_maintain.get();
+    // NX_PRINT << "request end!" << response->get();
 
-    NX_PRINT << "try another!" << response->get();
+    // NX_PRINT << "try another!" << response->get();
 
     // Val: Todo connect AiraFace
     // settings[kAirafaceAccountSetting];
