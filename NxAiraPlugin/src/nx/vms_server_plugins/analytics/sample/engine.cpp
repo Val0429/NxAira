@@ -4,6 +4,8 @@
 #include "device_agent.h"
 #include "ini.h"
 
+#include <nx/kit/debug.h>
+
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
@@ -165,6 +167,23 @@ std::string Engine::manifestString() const {
     }
 }
 )json";
+}
+
+Result<const ISettingsResponse*> Engine::settingsReceived() {
+    //settingValue() / m_settings
+
+    NX_PRINT << "Sent request!";
+    auto response = server.login("211.75.111.228", "82", "Admin", "123456");
+    NX_PRINT << "request end!" << response->get();
+
+    NX_PRINT << "try another!" << response->get();
+
+    // Val: Todo connect AiraFace
+    // settings[kAirafaceAccountSetting];
+    // Convert Type
+    // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
+
+    return nullptr;
 }
 
 } // namespace sample

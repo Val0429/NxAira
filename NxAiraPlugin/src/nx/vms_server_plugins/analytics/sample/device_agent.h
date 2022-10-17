@@ -11,6 +11,7 @@
 #include "engine.h"
 #include "DeviceAgentHelper/device_agent_motion_face_provider.h"
 
+
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {

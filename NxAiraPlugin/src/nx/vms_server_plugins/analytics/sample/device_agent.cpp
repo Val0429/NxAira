@@ -51,7 +51,7 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
 
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
     bool motion_detected = detectMotion(videoPacket);
-    NX_PRINT << "has motion?" << motion_detected;
+    NX_PRINT << "has motion?" << videoPacket->timestampUs();
 
     Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
     if (metadata) {
