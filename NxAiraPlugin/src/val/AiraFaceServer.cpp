@@ -10,6 +10,7 @@
 
 #define PROTOCOL "http"
 
+
 namespace val {
 
 AiraFaceServer::AiraFaceServer() :
@@ -194,6 +195,160 @@ void AiraFaceServer::maintain_handler() {
     }
 }
 /* #endregion MAINTAIN */
+
+/* #region LICENSE */
+AiraFaceServer::CResponseLicense AiraFaceServer::getLicenseInfo() {
+    return licenseInfo;
+}
+std::future<AiraFaceServer::CResponseLicense> AiraFaceServer::getLicense() {
+    /// concat fullUrl
+    const std::string uri = "/license";
+    std::string url = baseUrl(uri);
+
+    /// send request
+    std::future<AiraFaceServer::CResponseLicense> result = std::async(std::launch::async, [this, url]() {
+        CResponseLicense res;
+
+        /// messages
+        const std::string msg_err_get_token = "get license, fetch token timeout";
+        const std::string msg_success = "get license successfully";
+        const std::string msg_failed = "get license failed";
+
+        do {
+            /// get token
+            auto token_future = this->login();
+            auto status = token_future->wait_for(std::chrono::milliseconds(1000));
+            if (status == std::future_status::timeout) {
+                res.message = msg_err_get_token;
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << res.message NX_DEBUG_ENDL;
+                break;
+            }
+            std::string token = token_future->get();
+            if (token.size() == 0) {
+                res.message = "token timeout";
+                break;
+            }
+
+            /// actual request
+            std::string jsonString, err;
+            try {
+                http::Request request {url};
+
+                const auto response = request.send("GET",
+                    std::string("?token=") + token,
+                    {
+                        {"Content-Type", "application/json"},
+                        {"token", token}
+                    },
+                    std::chrono::milliseconds(1000));
+
+                jsonString = std::string {response.body.begin(), response.body.end()};
+                nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
+                std::string message = json["message"].string_value();
+                if (message != "ok") {
+                    throw message;
+                }
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << msg_success NX_DEBUG_ENDL;
+                auto jlicense = json["license"];
+                res.license = jlicense["license"].string_value();
+                res.count = jlicense["fcs_amount"].int_value();
+                res.success = true;
+                break;
+
+            } catch(const std::exception& ex) {
+                res.message = msg_failed + ":" + ex.what();
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << res.message << "." << jsonString NX_DEBUG_ENDL;
+                break;
+            }
+
+        } while(0);
+
+        acquire_license_lock();
+        licenseInfo = res;
+        return res;
+    });
+    
+    return result;
+}
+std::future<AiraFaceServer::CResponseLicense> AiraFaceServer::setLicense(const std::string license) {
+    /// concat fullUrl
+    const std::string uri = "/license";
+    std::string url = baseUrl(uri);
+
+    /// send request
+    std::future<AiraFaceServer::CResponseLicense> result = std::async(std::launch::async, [this, url, license]() {
+        CResponseLicense res;
+
+        /// messages
+        const std::string msg_err_get_token = "set license, fetch token timeout";
+        const std::string msg_success = "set license successfully";
+        const std::string msg_failed = "set license failed";
+
+        do {
+            /// get token
+            auto token_future = this->login();
+            auto status = token_future->wait_for(std::chrono::milliseconds(1000));
+            if (status == std::future_status::timeout) {
+                res.message = msg_err_get_token;
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << res.message NX_DEBUG_ENDL;
+                break;
+            }
+            std::string token = token_future->get();
+            if (token.size() == 0) {
+                res.message = "token timeout";
+                break;
+            }
+
+            /// actual request
+            std::string jsonString, err;
+            try {
+                http::Request request {url};
+
+                const auto response = request.send("POST",
+R"json(
+{
+    "license_key": ")json" + license + R"json("
+}
+)json"
+                    , {
+                        {"Content-Type", "application/json"},
+                        {"token", token}
+                    },
+                    std::chrono::milliseconds(1000));
+
+                jsonString = std::string {response.body.begin(), response.body.end()};
+                nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
+                std::string message = json["message"].string_value();
+                if (message != "ok") {
+                    throw message;
+                }
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << msg_success NX_DEBUG_ENDL;
+                auto jlicense = json["license"];
+                res.license = jlicense["license"].string_value();
+                res.count = jlicense["fcs_amount"].int_value();
+                res.success = true;
+                break;
+
+            } catch(const std::exception& ex) {
+                res.message = msg_failed + ":" + ex.what();
+                NX_DEBUG_STREAM << "[AiraFaceServer] " << res.message << "." << jsonString NX_DEBUG_ENDL;
+                break;
+            }
+
+        } while(0);
+
+        acquire_license_lock();
+        licenseInfo = res;
+        return res;
+    });
+    
+    return result;
+}
+std::unique_lock<std::mutex> AiraFaceServer::acquire_license_lock() {
+    static std::mutex mtx_license;
+    return std::unique_lock<std::mutex>(mtx_license);
+}
+/* #endregion LICENSE */
 
 std::string AiraFaceServer::baseUrl(std::string uri) {
     std::ostringstream strm;

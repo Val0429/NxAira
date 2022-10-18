@@ -44,6 +44,24 @@ public:
     std::future<std::string> maintain();
     /* #endregion MAINTAIN */
 
+    /* #region LICENSE */
+public:
+    class CResponseLicense {
+    public:
+        bool success;
+        std::string license;
+        int count;
+        std::string message;
+    };
+private:
+    CResponseLicense licenseInfo;
+    CResponseLicense getLicenseInfo();
+public:
+    std::future<CResponseLicense> getLicense();
+    std::future<CResponseLicense> setLicense(const std::string license);
+    std::unique_lock<std::mutex> acquire_license_lock();
+    /* #endregion LICENSE */
+
 private:
     std::string baseUrl(std::string uri);
 };
