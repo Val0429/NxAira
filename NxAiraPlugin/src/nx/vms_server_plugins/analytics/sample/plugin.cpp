@@ -6,7 +6,7 @@
 #include <nx/kit/utils.h>
 
 #include "engine.h"
-#include "ini.h"
+#include "settings_model.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -25,11 +25,67 @@ std::string Plugin::manifestString() const
 {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
-    "id": "aira.metadata",
+    "id": ")json" + instanceId() + R"json(",
     "name": "Aira x NX metadata",
     "description": "Aira Plugin",
     "version": "1.0.0",
-    "vendor": "Aira Co."
+    "vendor": "Aira Co.",
+    "engineSettingsModel":
+    {
+        "type": "Settings",
+        "items":
+        [
+            {
+                "type": "GroupBox",
+                "caption": "AiraFace License",
+                "items":
+                [
+                    {
+                        "type": "TextField",
+                        "name": ")json" + kAirafaceLicenseSetting + R"json(",
+                        "caption": "License",
+                        "defaultValue": ""
+                    }
+                ]
+            },
+            {
+                "type": "GroupBox",
+                "caption": "AiraFace Configuration",
+                "items":
+                [
+                    {
+                        "type": "TextField",
+                        "name": ")json" + kAirafaceHostSetting + R"json(",
+                        "caption": "Hostname",
+                        "defaultValue": ")json" + DEF_HOST + R"json("
+                    },
+                    {
+                        "type": "SpinBox",
+                        "name": ")json" + kAirafacePortSetting + R"json(",
+                        "caption": "Port",
+                        "defaultValue": )json" + DEF_PORT + R"json(,
+                        "minValue": 0,
+                        "maxValue": 65535
+                    },
+                    {
+                        "type": "TextField",
+                        "name": ")json" + kAirafaceAccountSetting + R"json(",
+                        "caption": ")json" + DEF_ACCOUNT + R"json(",
+                        "defaultValue": "Admin"
+                    },
+                    {
+                        "type": "TextField",
+                        "name": ")json" + kAirafacePasswordSetting + R"json(",
+                        "caption": "Password",
+                        "defaultValue": "",
+                        "validationErrorMessage": "Password is required.",
+                        "validationRegex": "^.+$",
+                        "validationRegexFlags": "i"
+                    }
+                ]
+            }
+        ]
+    }
 }
 )json";
 }

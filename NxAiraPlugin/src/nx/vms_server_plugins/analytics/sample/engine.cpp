@@ -6,6 +6,8 @@
 
 #include <nx/kit/debug.h>
 
+#include "settings_model.h"
+
 namespace nx {
 namespace vms_server_plugins {
 namespace analytics {
@@ -74,65 +76,6 @@ std::string Engine::manifestString() const {
         [
             {
                 "type": "GroupBox",
-                "caption": "AiraFace License",
-                "items":
-                [
-                    {
-                        "type": "TextField",
-                        "name": ")json" + kAirafaceLicenseSetting + R"json(",
-                        "caption": "License",
-                        "defaultValue": ""
-                    }
-                ]
-            },
-            {
-                "type": "GroupBox",
-                "caption": "AiraFace Configuration",
-                "items":
-                [
-                    {
-                        "type": "ComboBox",
-                        "name": ")json" + kAirafaceProtocolSetting + R"json(",
-                        "caption": "Protocol",
-                        "defaultValue": "HTTPS",
-                        "range": [
-                            "HTTP",
-                            "HTTPS"
-                        ]
-                    },
-                    {
-                        "type": "TextField",
-                        "name": ")json" + kAirafaceIPSetting + R"json(",
-                        "caption": "IP",
-                        "defaultValue": "localhost"
-                    },
-                    {
-                        "type": "SpinBox",
-                        "name": ")json" + kAirafacePortSetting + R"json(",
-                        "caption": "Port",
-                        "defaultValue": 8888,
-                        "minValue": 0,
-                        "maxValue": 65535
-                    },
-                    {
-                        "type": "TextField",
-                        "name": ")json" + kAirafaceAccountSetting + R"json(",
-                        "caption": "Account",
-                        "defaultValue": "Admin"
-                    },
-                    {
-                        "type": "TextField",
-                        "name": ")json" + kAirafacePasswordSetting + R"json(",
-                        "caption": "Password",
-                        "defaultValue": "",
-                        "validationErrorMessage": "Password is required.",
-                        "validationRegex": "^.+$",
-                        "validationRegexFlags": "i"
-                    }
-                ]
-            },
-            {
-                "type": "GroupBox",
                 "caption": "AiraFace ROI",
                 "items":
                 [
@@ -170,15 +113,32 @@ std::string Engine::manifestString() const {
 }
 
 Result<const ISettingsResponse*> Engine::settingsReceived() {
+    NX_PRINT << "Handle Plugin Setting...";
+
+    const std::string license = settingValue(kAirafaceLicenseSetting);
+    const std::string hostname = settingValue(kAirafaceHostSetting);
+    const std::string port = settingValue(kAirafacePortSetting);
+    const std::string account = settingValue(kAirafaceAccountSetting);
+    const std::string password = settingValue(kAirafacePasswordSetting);
+
+    NX_PRINT << "License: " << license;
+    NX_PRINT << "Host: " << hostname;
+    NX_PRINT << "Port: " << port;
+    NX_PRINT << "Account: " << account;
+    NX_PRINT << "Password: " << password;
+
+    /// Attempt to login when hostname / port / account / password valid
+    if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
+        server.login(hostname, port, account, password);
+    }
+
+
     //settingValue() / m_settings
 
-    NX_PRINT << "Sent request!";
-    auto response = server.login("211.75.111.228", "82", "Admin", "123456");
-    auto res_maintain = server.maintain();
-    NX_PRINT << "request end!" << res_maintain.get();
-    // NX_PRINT << "request end!" << response->get();
-
-    // NX_PRINT << "try another!" << response->get();
+    // NX_PRINT << "Sent request!";
+    // auto response = server.login("211.75.111.228", "82", "Admin", "123456");
+    // auto res_maintain = server.maintain();
+    // NX_PRINT << "request end!" << res_maintain.get();
 
     // Val: Todo connect AiraFace
     // settings[kAirafaceAccountSetting];

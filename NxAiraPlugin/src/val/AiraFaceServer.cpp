@@ -54,6 +54,10 @@ R"json(
 
             jsonString = std::string {response.body.begin(), response.body.end()};
             nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
+            std::string message = json["message"].string_value();
+            if (message != "ok") {
+                throw message;
+            }
             this->logined = true;
             return json["token"].string_value();
 
@@ -125,6 +129,10 @@ R"json(
 
             jsonString = std::string {response.body.begin(), response.body.end()};
             nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
+            std::string message = json["message"].string_value();
+            if (message != "ok") {
+                throw message;
+            }
             NX_DEBUG_STREAM << "[AiraFaceServer] maintain function successfully" NX_DEBUG_ENDL;
             return json["token"].string_value();
 
