@@ -85,6 +85,7 @@ bool AiraFaceServer::getLogined() {
 }
 
 std::unique_lock<std::mutex> AiraFaceServer::acquire_login_lock() {
+    static std::mutex mtx_login;
     return std::unique_lock<std::mutex>(mtx_login);
 }
 /* #endregion LOGIN */
@@ -175,7 +176,7 @@ void AiraFaceServer::maintain_handler() {
         std::string token = res.get();
         if (token.size() > 0) {
             NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: success" NX_DEBUG_ENDL;
-            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(60000));
             continue;
         }
         NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: failed. force login again." NX_DEBUG_ENDL;

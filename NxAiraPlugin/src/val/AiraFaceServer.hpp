@@ -24,7 +24,6 @@ public:
 
     /* #region LOGIN */
 private:
-    std::mutex mtx_login;
     bool logined = false;
 public:
     std::shared_ptr<std::shared_future<std::string>> login(
