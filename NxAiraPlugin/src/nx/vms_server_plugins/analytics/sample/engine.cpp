@@ -130,6 +130,7 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     /// Attempt to login when hostname / port / account / password valid
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
         server.login(hostname, port, account, password);
+        server.getLicense();
     }
 
 

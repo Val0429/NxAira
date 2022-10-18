@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <nx/kit/json.h>
 #include <nx/kit/debug.h>
@@ -150,49 +151,55 @@ R"json(
 void AiraFaceServer::maintain_handler() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    while (true) {
-        auto lock = this->acquire_login_lock();
+    try {
+        while (true) {
+            auto lock = this->acquire_login_lock();
 
-        /// haven't login yet. wait for login
-        if (this->getLogined() == false) {
-            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+            /// haven't login yet. wait for login
+            if (this->getLogined() == false) {
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                lock.unlock();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                continue;
+            }
+
+            /// haven't initial yet. rare case. wait for initial
+            if (this->shared_token == nullptr) {
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token not initialized yet" NX_DEBUG_ENDL;
+                lock.unlock();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                continue;
+            }
+
+            /// lock release here
             lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            continue;
-        }
 
-        /// haven't initial yet. rare case. wait for initial
-        if (this->shared_token == nullptr) {
-            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token not initialized yet" NX_DEBUG_ENDL;
-            lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            continue;
-        }
+            /// the login is not working 
+            auto status = this->shared_token->wait_for(std::chrono::milliseconds(1000));
+            if (status != std::future_status::ready) {
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token failed to fetch" NX_DEBUG_ENDL;
+                this->login(true);
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                continue;
+            }
 
-        /// lock release here
-        lock.unlock();
-
-        /// the login is not working 
-        auto status = this->shared_token->wait_for(std::chrono::milliseconds(1000));
-        if (status != std::future_status::ready) {
-            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token failed to fetch" NX_DEBUG_ENDL;
+            auto res = this->maintain();
+            std::string token = res.get();
+            if (token.size() > 0) {
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: success" NX_DEBUG_ENDL;
+                std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+                continue;
+            }
+            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: failed. force login again." NX_DEBUG_ENDL;
             this->login(true);
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             continue;
         }
 
-        auto res = this->maintain();
-        std::string token = res.get();
-        if (token.size() > 0) {
-            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: success" NX_DEBUG_ENDL;
-            std::this_thread::sleep_for(std::chrono::milliseconds(60000));
-            continue;
-        }
-        NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: failed. force login again." NX_DEBUG_ENDL;
-        this->login(true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        continue;
+    } catch (const std::exception& ex) {
+        NX_DEBUG_STREAM << "What's the exception here?" << ex.what() NX_DEBUG_ENDL;
     }
+
 }
 /* #endregion MAINTAIN */
 
@@ -232,21 +239,29 @@ std::future<AiraFaceServer::CResponseLicense> AiraFaceServer::getLicense() {
             /// actual request
             std::string jsonString, err;
             try {
-                http::Request request {url};
-
+                const std::string finalUrl = url + "?token=" + token;
+                http::Request request {finalUrl};
                 const auto response = request.send("GET",
-                    std::string("?token=") + token,
+                    "",
                     {
                         {"Content-Type", "application/json"},
                         {"token", token}
                     },
                     std::chrono::milliseconds(1000));
 
+                // const auto response = request.send("GET",
+                //     std::string("?token=") + token,
+                //     {
+                //         {"Content-Type", "application/json"},
+                //         {"token", token}
+                //     },
+                //     std::chrono::milliseconds(1000));
+
                 jsonString = std::string {response.body.begin(), response.body.end()};
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
                 std::string message = json["message"].string_value();
                 if (message != "ok") {
-                    throw message;
+                    throw std::runtime_error(message);
                 }
                 NX_DEBUG_STREAM << "[AiraFaceServer] " << msg_success NX_DEBUG_ENDL;
                 auto jlicense = json["license"];
