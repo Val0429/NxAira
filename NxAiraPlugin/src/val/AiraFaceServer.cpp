@@ -167,6 +167,9 @@ R"json(
 }
 
 void AiraFaceServer::maintain_handler() {
+#ifdef DEBUG
+NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
+#endif
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     try {
