@@ -6,6 +6,7 @@
 #include <memory>
 #include <future>
 
+#include "./../val/result.h"
 
 namespace val {
 
@@ -17,7 +18,12 @@ private:
     std::string password;
 
 private:
-    std::shared_ptr<std::shared_future<std::string>> shared_token;
+    typedef val::Result<std::string>
+            MessageType;
+    typedef std::shared_future<MessageType>
+            FutureMessageType;
+private:
+    std::shared_ptr<FutureMessageType> shared_token;
 
 public:
     AiraFaceServer();
@@ -26,11 +32,11 @@ public:
 private:
     bool logined = false;
 public:
-    std::shared_ptr<std::shared_future<std::string>> login(
+    std::shared_ptr<FutureMessageType> login(
         std::string hostname, std::string port,
         std::string username, std::string password
         );
-    std::shared_ptr<std::shared_future<std::string>> login(bool force);
+    std::shared_ptr<FutureMessageType> login(bool force);
     std::unique_lock<std::mutex> acquire_login_lock();
 
     bool getLogined();
@@ -41,24 +47,33 @@ private:
     std::thread token_maintain;
     void maintain_handler();
 public:
-    std::future<std::string> maintain();
+    FutureMessageType maintain();
     /* #endregion MAINTAIN */
 
     /* #region LICENSE */
 public:
-    class CResponseLicense {
+    class CLicenseInfo {
     public:
-        bool success;
+        friend std::ostream& operator<<(std::ostream& os, const CLicenseInfo& o) {
+            os << "license: " << o.license << ", count: " << o.count;
+            return os;
+        }
+    public:
         std::string license;
         int count;
-        std::string message;
     };
 private:
-    CResponseLicense licenseInfo;
-    CResponseLicense getLicenseInfo();
+    typedef val::Result<CLicenseInfo>
+            LicenseMessageType;
+    typedef std::shared_future<LicenseMessageType>
+            FutureLicenseMessageType;
+
+private:
+    LicenseMessageType licenseInfo;
+    LicenseMessageType getLicenseInfo();
 public:
-    std::future<CResponseLicense> getLicense();
-    std::future<CResponseLicense> setLicense(const std::string license);
+    FutureLicenseMessageType getLicense();
+    FutureLicenseMessageType setLicense(const std::string license);
     std::unique_lock<std::mutex> acquire_license_lock();
     /* #endregion LICENSE */
 
