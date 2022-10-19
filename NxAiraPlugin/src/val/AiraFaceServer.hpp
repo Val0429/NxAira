@@ -22,15 +22,13 @@ private:
             MessageType;
     typedef std::shared_future<MessageType>
             FutureMessageType;
-private:
-    std::shared_ptr<FutureMessageType> shared_token;
 
 public:
     AiraFaceServer();
 
     /* #region LOGIN */
 private:
-    bool logined = false;
+    std::shared_ptr<FutureMessageType> shared_token;
 public:
     std::shared_ptr<FutureMessageType> login(
         std::string hostname, std::string port,
@@ -40,6 +38,7 @@ public:
     std::unique_lock<std::mutex> acquire_login_lock();
 
     bool getLogined();
+    std::shared_ptr<FutureMessageType> get_shared_token();
     /* #endregion LOGIN */
 
     /* #region MAINTAIN */

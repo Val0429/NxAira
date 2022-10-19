@@ -18,11 +18,6 @@
 
 namespace val {
 
-// AiraFaceServer::AiraFaceServer()
-// {
-
-// }
-
 AiraFaceServer::AiraFaceServer() :
 token_maintain(&AiraFaceServer::maintain_handler, this)
 {
@@ -72,7 +67,6 @@ R"json(
                     res = val::error(val::ErrorCode::otherError, message);
                     break;
                 }
-                this->logined = true;
                 res = json["token"].string_value();
                 break;
 
@@ -99,12 +93,24 @@ std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::login(bool fo
             this->username, this->password
         );
     }
-    auto lk = acquire_login_lock();
-    return shared_token;
+    return get_shared_token();
 }
 
 bool AiraFaceServer::getLogined() {
-    return logined;
+    auto token = get_shared_token();
+    /// case 1: not initial yet
+    if (token == nullptr) return false;
+    /// case 2: not ready
+    auto status = token->wait_for(std::chrono::milliseconds(0));
+    if (status != std::future_status::ready) return false;
+    /// case 3: error
+    if (!token->get().isOk()) return false;
+    return true;
+}
+
+std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::get_shared_token() {
+    acquire_login_lock();
+    return shared_token;
 }
 
 std::unique_lock<std::mutex> AiraFaceServer::acquire_login_lock() {
@@ -206,50 +212,34 @@ NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
 
     try {
         while (true) {
-            auto lock = this->acquire_login_lock();
+            auto token = get_shared_token();
 #ifdef DEBUG
 NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
 #endif
-            /// haven't login yet. wait for login
-            if (this->getLogined() == false) {
-                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
-                lock.unlock();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                continue;
+            /// login failed because of network error
+            if (token != nullptr) {
+                auto status = token->wait_for(std::chrono::milliseconds(0));
+                if (status == std::future_status::ready && !token->get().isOk()) {
+                    auto token_result = token->get();
+                    if (token_result.error().errorCode() == val::ErrorCode::networkError) {
+                        NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
+                        this->login(true);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                        continue;
+                    }
+                    /// 2nd case, wait for login
+                    NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    continue;
+                }
             }
 #ifdef DEBUG
 NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
 #endif
 
-            /// haven't initial yet. rare case. wait for initial
-            if (this->shared_token == nullptr) {
-                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token not initialized yet" NX_DEBUG_ENDL;
-                lock.unlock();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                continue;
-            }
-#ifdef DEBUG
-NX_DEBUG_STREAM << "a333333333333333333333333" NX_DEBUG_ENDL;
-#endif
-
-            /// lock release here
-            lock.unlock();
-
-            /// the login is not working 
-            auto status = this->shared_token->wait_for(std::chrono::milliseconds(1000));
-            if (status != std::future_status::ready) {
-                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token failed to fetch" NX_DEBUG_ENDL;
-                this->login(true);
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-                continue;
-            }
-#ifdef DEBUG
-NX_DEBUG_STREAM << "a44444444444444444444444444" NX_DEBUG_ENDL;
-#endif
-
             auto res = this->maintain();
-            MessageType token = res.get();
-            if (token.isOk()) {
+            MessageType mtoken = res.get();
+            if (mtoken.isOk()) {
                 NX_DEBUG_STREAM << PR_HEAD << MAINTAIN_HEAD << "status: success" NX_DEBUG_ENDL;
                 std::this_thread::sleep_for(std::chrono::milliseconds(5000));
                 continue;
