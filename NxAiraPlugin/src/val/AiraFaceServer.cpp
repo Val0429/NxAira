@@ -7,6 +7,8 @@
 #include <nx/kit/json.h>
 #include <nx/kit/debug.h>
 
+#include "./../nx/vms_server_plugins/analytics/sample/engine.h"
+
 #include "./../lib/HTTPRequest.hpp"
 
 #define PROTOCOL "http"
@@ -20,7 +22,8 @@ namespace val {
 
 const std::string TIMEOUT = std::string("Request timed out");
 
-AiraFaceServer::AiraFaceServer() :
+AiraFaceServer::AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine) :
+engine(engine),
 token_maintain(&AiraFaceServer::maintain_handler, this)
 {
     token_maintain.detach();
@@ -79,6 +82,7 @@ R"json(
             }
 
         } while(0);
+        pushEvent(res.isOk() ? EventCode::LoginSuccess : EventCode::LoginFailed, res);
         return res;
 
     });

@@ -18,7 +18,8 @@ using namespace nx::sdk::analytics;
 
 Engine::Engine():
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
-    nx::sdk::analytics::Engine(/*enableOutput*/ true)
+    nx::sdk::analytics::Engine(/*enableOutput*/ true),
+    server(*this)
 {
 }
 
@@ -67,6 +68,8 @@ static std::string buildCapabilities() {
 std::string Engine::manifestString() const {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
+    "version": "1.0.0",
+    "vendor": "Aira Corporation",
     "streamTypeFilter": "motion|compressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
@@ -76,33 +79,143 @@ std::string Engine::manifestString() const {
         [
             {
                 "type": "GroupBox",
-                "caption": "AiraFace ROI",
-                "items":
-                [
+                "caption": "Facial Recognition",
+                "items": [
                     {
-                        "type": "PolygonFigure",
-                        "name": "polygon1",
-                        "caption": "ROI",
-                        "description": "Select a region of interest",
-                        "minPoints": 4,
-                        "maxPoints": 8
-                    }
-                ]
+                        "type": "SwitchButton",
+                        "name": "EnableFacialRecognition",
+                        "caption": "Enable Facial Recognition",
+                        "description": "Switch on to enable the facial recognition function",
+                        "defaultValue": false
+                    },
+                    {
+                        "type": "GroupBox",
+                        "caption": "Facial Recognition Setting",
+                        "items": [
+                            {
+                                "type": "SpinBox",
+                                "name": "MinimumFaceSize",
+                                "caption": "Minimum FaceSize",
+                                "description": "The minimum face size to detect. (0-150)",
+                                "defaultValue": 30,
+                                "minValue": 0,
+                                "maxValue": 150
+                            },
+                            {
+                                "type": "SpinBox",
+                                "name": "FRRecognitionScore",
+                                "caption": "Recognition Score",
+                                "description": "The score to find correct person. The higher the more accurate. (65-100)",
+                                "defaultValue": 80,
+                                "minValue": 65,
+                                "maxValue": 100
+                            },
+                            {
+                                "type": "DoubleSpinBox",
+                                "name": "FRRecognitionFPS",
+                                "caption": "Recognition FPS",
+                                "description": "How many frame per seconds to recognize. (0.5-2)",
+                                "defaultValue": 0.5,
+                                "minValue": 0.5,
+                                "maxValue": 2
+                            },
+                            {
+                                "type": "SpinBox",
+                                "name": "FRAntispoofingScore",
+                                "caption": "Antispoofing Score",
+                                "description": "",
+                                "defaultValue": 0,
+                                "minValue": 0,
+                                "maxValue": 100
+                            }
+                        ]
+                    },
+                    {
+                        "type": "GroupBox",
+                        "caption": "Analytic Event Setting",
+                        "items": [
+                            {
+                                "type": "SwitchButton",
+                                "name": "Watchlist",
+                                "caption": "Watchlist",
+                                "description": "",
+                                "defaultValue": true
+                            },
+                            {
+                                "type": "SwitchButton",
+                                "name": "Register",
+                                "caption": "Register",
+                                "description": "",
+                                "defaultValue": true
+                            },
+                            {
+                                "type": "SwitchButton",
+                                "name": "Stranger",
+                                "caption": "Stranger",
+                                "description": "",
+                                "defaultValue": true
+                            }
+                        ]
+                    }  
+                ]               
             },
             {
                 "type": "GroupBox",
-                "caption": "AiraFace Object Size",
+                "caption": "Person Detection",
                 "items":
                 [
                     {
-                        "type": "ObjectSizeConstraints",
-                        "name": "sizeConstraints1",
-                        "caption": "Person size constraints",
-                        "description": "Size range a person should fit into to be detected",
-                        "defaultValue": {
-                            "minimum": [0.1, 0.3],
-                            "maximum": [0.3, 0.9]
-                        }
+                        "type": "SwitchButton",
+                        "name": "EnablePersonDetection",
+                        "caption": "Enable Person Detection",
+                        "description": "Switch on to enable the person detection function",
+                        "defaultValue": false
+                    },
+                    {
+                        "type": "GroupBox",
+                        "caption": "Person Detection Setting",
+                        "items": [
+                            {
+                                "type": "SpinBox",
+                                "name": "MinimumBodySize",
+                                "caption": "Minimum Body Size",
+                                "description": "The minimum body size to detect. (0-150)",
+                                "defaultValue": 30,
+                                "minValue": 0,
+                                "maxValue": 150
+                            },
+                            {
+                                "type": "SpinBox",
+                                "name": "PDRecognitionScore",
+                                "caption": "Recognition Score",
+                                "description": "The score to detect correct person. The higher the more accurate. (65-100)",
+                                "defaultValue": 80,
+                                "minValue": 65,
+                                "maxValue": 100
+                            },
+                            {
+                                "type": "DoubleSpinBox",
+                                "name": "PDRecognitionFPS",
+                                "caption": "Recognition FPS",
+                                "description": "How many frame per seconds to detect. (0.5-2)",
+                                "defaultValue": 0.5,
+                                "minValue": 0.5,
+                                "maxValue": 2
+                            }
+                        ]
+                    },
+                    {
+                        "type": "GroupBox",
+                        "caption": "Analytic Event Setting",
+                        "items": [
+                            {
+                                "type": "SwitchButton",
+                                "name": "PersonDetection",
+                                "caption": "Person Detection",
+                                "description": "",
+                                "defaultValue": true
+                            }
+                        ]
                     }
                 ]
             }            
@@ -148,6 +261,13 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
 
     return nullptr;
+}
+
+void Engine::pushEvent(
+    nx::sdk::IPluginDiagnosticEvent::Level level,
+    std::string caption,
+    const std::string& description) {
+    pushPluginDiagnosticEvent(level, caption, description);
 }
 
 } // namespace sample

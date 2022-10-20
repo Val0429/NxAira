@@ -77,12 +77,16 @@ public:
     const Error& error() const { return m_error; }
     Value value() const { return m_value; }
 
-    friend std::ostream& operator<<(std::ostream& os, const Result& result) {
-        result.isOk() ?
-            (os << "[ok] " << result.value())
-            :
-            (os << "[failed] [" << ((int)result.error().errorCode()) << "] " << result.error().errorMessage())
+    /// string conversion
+    std::string toString() const {
+        return isOk() ?
+            (std::string("[ok] ") + static_cast<std::string>(value())) :
+            (std::string("[failed] [") + std::to_string((int)error().errorCode()) + "] " + error().errorMessage())
             ;
+    }
+    operator std::string() { return toString(); }
+    friend std::ostream& operator<<(std::ostream& os, const Result& result) {
+        os << result.toString();
         return os;
     }
 

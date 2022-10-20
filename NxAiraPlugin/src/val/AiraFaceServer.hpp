@@ -8,6 +8,13 @@
 
 #include "./../val/result.h"
 
+namespace nx {
+    namespace vms_server_plugins {
+        namespace analytics {
+        namespace aira {
+            class Engine;
+}}}}
+
 namespace val {
 
 class AiraFaceServer {
@@ -23,8 +30,10 @@ private:
     typedef std::shared_future<MessageType>
             FutureMessageType;
 
+private:
+    nx::vms_server_plugins::analytics::aira::Engine& engine;
 public:
-    AiraFaceServer();
+    AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine);
 
     /* #region LOGIN */
 private:
@@ -53,10 +62,16 @@ public:
 public:
     class CLicenseInfo {
     public:
+        /// string conversion
+        std::string toString() const {
+            return std::string("license: ") + license + ", count: " + std::to_string(count);
+        }
+        operator std::string() { return toString(); }
         friend std::ostream& operator<<(std::ostream& os, const CLicenseInfo& o) {
-            os << "license: " << o.license << ", count: " << o.count;
+            os << o.toString();
             return os;
         }
+
     public:
         std::string license;
         int count;
@@ -78,6 +93,36 @@ public:
 
 private:
     std::string baseUrl(std::string uri);
+
+/// Event Handling
+private:
+    enum class EventCode: int {
+        LoginSuccess,
+        LoginFailed,
+        MaintainSuccess,
+        MaintainFailed,
+        GetLicenseSuccess,
+        GetLicenseFailed,
+        SetLicenseSuccess,
+        SetLicenseFailed
+    };
+
+    template<typename Value>
+    void pushEvent(EventCode code, val::Result<Value>& o) {
+        switch (code) {
+            case EventCode::LoginSuccess: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login Info", "Login into AiraFace Server successfully."); break; }
+            case EventCode::LoginFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login Info", std::string("Login failed, reason: ") + static_cast<std::string>(o)); break; }
+            case EventCode::MaintainSuccess:
+            case EventCode::MaintainFailed:
+                break;
+            case EventCode::GetLicenseSuccess:
+            case EventCode::GetLicenseFailed:
+            case EventCode::SetLicenseSuccess:
+            case EventCode::SetLicenseFailed:
+                break;
+            default: { engine.pushEvent(IPluginDiagnosticEvent::Level::error, "Unknown Error", o); break; }
+        }
+    }
 };
 
 }

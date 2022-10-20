@@ -29,7 +29,7 @@ std::string Plugin::manifestString() const
     "name": "Aira x NX metadata",
     "description": "Aira Plugin",
     "version": "1.0.0",
-    "vendor": "Aira Co.",
+    "vendor": "Aira Corporation",
     "engineSettingsModel":
     {
         "type": "Settings",
@@ -81,6 +81,12 @@ std::string Plugin::manifestString() const
                         "validationErrorMessage": "Password is required.",
                         "validationRegex": "^.+$",
                         "validationRegexFlags": "i"
+                    },
+                    {
+                        "type": "TextField",
+                        "name": "NTP",
+                        "caption": "NTP Server",
+                        "defaultValue": ""
                     }
                 ]
             }

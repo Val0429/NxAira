@@ -28,6 +28,11 @@ protected:
         nx::sdk::Result<nx::sdk::analytics::IDeviceAgent*>* outResult,
         const nx::sdk::IDeviceInfo* deviceInfo) override;
 
+public:
+    void pushEvent(
+        nx::sdk::IPluginDiagnosticEvent::Level level,
+        std::string caption,
+        const std::string& description);
 private:
     val::AiraFaceServer server;
 };
