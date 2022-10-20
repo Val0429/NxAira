@@ -79,6 +79,34 @@ std::string Engine::manifestString() const {
         [
             {
                 "type": "GroupBox",
+                "caption": "License Info",
+                "items": [
+                    {
+                        "type": "RadioButtonGroup",
+                        "name": "LicenseID",
+                        "caption": "License ID",
+                        "description": "",
+                        "defaultValue": "opt1",
+                        "range": ["opt1"],
+                        "itemCaptions": {
+                            "opt1": "No License"
+                        }
+                    },
+                    {
+                        "type": "RadioButtonGroup",
+                        "name": "SupportChannels",
+                        "caption": "Current / Total Channels",
+                        "description": "",
+                        "defaultValue": "opt1",
+                        "range": ["opt1"],
+                        "itemCaptions": {
+                            "opt1": "0 / 0"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "GroupBox",
                 "caption": "Facial Recognition",
                 "items": [
                     {
