@@ -47,6 +47,7 @@ public:
     std::unique_lock<std::mutex> acquire_login_lock();
 
     bool getLogined();
+    void set_shared_token(std::shared_ptr<FutureMessageType> o);
     std::shared_ptr<FutureMessageType> get_shared_token();
     /* #endregion LOGIN */
 
@@ -84,6 +85,7 @@ private:
 
 private:
     LicenseMessageType licenseInfo;
+    void setLicenseInfo(LicenseMessageType o);
     LicenseMessageType getLicenseInfo();
 public:
     FutureLicenseMessageType getLicense();

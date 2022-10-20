@@ -88,7 +88,6 @@ R"json(
     });
     
     shared_token = std::make_shared<AiraFaceServer::FutureMessageType>(std::move(result));
-
     return shared_token;
 }
 
@@ -114,8 +113,12 @@ bool AiraFaceServer::getLogined() {
     return true;
 }
 
+void AiraFaceServer::set_shared_token(std::shared_ptr<FutureMessageType> o) {
+    auto lk = acquire_login_lock();
+    shared_token = std::move(o);
+}
 std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::get_shared_token() {
-    acquire_login_lock();
+    auto lk = acquire_login_lock();
     return shared_token;
 }
 
@@ -203,8 +206,8 @@ NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;
                 break;
             }
         } while(0);
+        pushEvent(res.isOk() ? EventCode::MaintainSuccess : EventCode::MaintainFailed, res);
         return res;
-
     });
     
     return result;
@@ -259,62 +262,16 @@ NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
     } catch (const std::exception& ex) {
         NX_DEBUG_STREAM << PR_HEAD << MAINTAIN_HEAD << "What's the exception here?" << ex.what() NX_DEBUG_ENDL;
     }
-
-
-    // try {
-    //     while (true) {
-    //         auto lock = this->acquire_login_lock();
-
-    //         /// haven't login yet. wait for login
-    //         if (this->getLogined() == false) {
-    //             NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
-    //             lock.unlock();
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    //             continue;
-    //         }
-
-    //         /// haven't initial yet. rare case. wait for initial
-    //         if (this->shared_token == nullptr) {
-    //             NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token not initialized yet" NX_DEBUG_ENDL;
-    //             lock.unlock();
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    //             continue;
-    //         }
-
-    //         /// lock release here
-    //         lock.unlock();
-
-    //         /// the login is not working 
-    //         auto status = this->shared_token->wait_for(std::chrono::milliseconds(1000));
-    //         if (status != std::future_status::ready) {
-    //             NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: token failed to fetch" NX_DEBUG_ENDL;
-    //             this->login(true);
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    //             continue;
-    //         }
-
-    //         auto res = this->maintain();
-    //         std::string token = res.get();
-    //         if (token.size() > 0) {
-    //             NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: success" NX_DEBUG_ENDL;
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    //             continue;
-    //         }
-    //         NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: failed. force login again." NX_DEBUG_ENDL;
-    //         this->login(true);
-    //         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    //         continue;
-    //     }
-
-    // } catch (const std::exception& ex) {
-    //     NX_DEBUG_STREAM << "What's the exception here?" << ex.what() NX_DEBUG_ENDL;
-    // }
-
 }
 /* #endregion MAINTAIN */
 
 /* #region LICENSE */
+void AiraFaceServer::setLicenseInfo(AiraFaceServer::LicenseMessageType o) {
+    auto lk = acquire_license_lock();
+    licenseInfo = std::move(o);
+}
 AiraFaceServer::LicenseMessageType AiraFaceServer::getLicenseInfo() {
+    auto lk = acquire_license_lock();
     return licenseInfo;
 }
 AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
@@ -389,9 +346,8 @@ AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
             }
 
         } while(0);
-
-        acquire_license_lock();
-        licenseInfo = res;
+        pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
+        setLicenseInfo(res);
         return res;
     });
     
@@ -465,9 +421,8 @@ R"json(
             }
 
         } while(0);
-
-        acquire_license_lock();
-        licenseInfo = res;
+        pushEvent(res.isOk() ? EventCode::SetLicenseSuccess : EventCode::SetLicenseFailed, res);
+        setLicenseInfo(res);
         return res;
     });
     
