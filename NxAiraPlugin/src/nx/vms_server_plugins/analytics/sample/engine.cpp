@@ -77,6 +77,8 @@ static std::string buildCapabilities() {
  */
 /// metadata_sdk\src\nx\sdk\settings_model.md
 std::string Engine::manifestString() const {
+    auto license = server.getLicenseInfo();
+
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
     "version": "1.0.0",
@@ -100,7 +102,7 @@ std::string Engine::manifestString() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": "No License"
+                            "opt1": ")json" + license.get().license + R"json("
                         }
                     },
                     {
