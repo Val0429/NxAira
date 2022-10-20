@@ -195,7 +195,7 @@ NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;
 
             } catch(const std::exception& ex) {
                 res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
-                NX_DEBUG_STREAM << PR_HEAD << LOGIN_HEAD << res NX_DEBUG_ENDL;
+                NX_DEBUG_STREAM << PR_HEAD << MAINTAIN_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
         } while(0);
