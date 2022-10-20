@@ -80,8 +80,8 @@ public:
     /// string conversion
     std::string toString() const {
         return isOk() ?
-            (std::string("[ok] ") + static_cast<std::string>(value())) :
-            (std::string("[failed] [") + std::to_string((int)error().errorCode()) + "] " + error().errorMessage())
+            (std::string("[OK] ") + static_cast<std::string>(value())) :
+            (std::string("[FAILED] [") + std::to_string((int)error().errorCode()) + "] " + error().errorMessage())
             ;
     }
     operator std::string() { return toString(); }

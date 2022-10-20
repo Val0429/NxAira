@@ -112,13 +112,13 @@ private:
     template<typename Value>
     void pushEvent(EventCode code, val::Result<Value>& o) {
         switch (code) {
-            case EventCode::LoginSuccess: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login Info", "Login into AiraFace Server successfully."); break; }
-            case EventCode::LoginFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login Info", std::string("Login failed, reason: ") + static_cast<std::string>(o)); break; }
+            case EventCode::LoginSuccess: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login", "AiraFace Server successfully."); break; }
+            case EventCode::LoginFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Login Failed", o); break; }
             case EventCode::MaintainSuccess:
             case EventCode::MaintainFailed:
                 break;
-            case EventCode::GetLicenseSuccess:
-            case EventCode::GetLicenseFailed:
+            case EventCode::GetLicenseSuccess: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Get License", o); break; }
+            case EventCode::GetLicenseFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Get License Failed", o); break; }
             case EventCode::SetLicenseSuccess:
             case EventCode::SetLicenseFailed:
                 break;

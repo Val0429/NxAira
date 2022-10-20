@@ -45,19 +45,30 @@ void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDevice
  * Val: Build Plugin Capabilities
  */
 static std::string buildCapabilities() {
-    std::string capabilities = "needUncompressedVideoFrames_yuv420";
+    std::vector<std::string> capabilities;
 
-    if (ini().deviceDependent)
-        capabilities += "|deviceDependent";
+    if (ini().deviceDependent) capabilities.push_back("deviceDependent");
+    if (ini().usePluginAsSettingsOrigin) capabilities.push_back("usePluginAsSettingsOrigin");
 
-    if (ini().usePluginAsSettingsOrigin)
-        capabilities += "|usePluginAsSettingsOrigin";
+    std::ostringstream join;
+    std::copy(capabilities.begin(), capabilities.end(),
+        std::ostream_iterator<std::string>(join, "|"));
+    
+    return join.str();
 
-    // Delete first '|', if any.
-    if (!capabilities.empty() && capabilities.at(0) == '|')
-        capabilities.erase(0, 1);
+    // std::string capabilities = "needUncompressedVideoFrames_yuv420";
 
-    return capabilities;
+    // if (ini().deviceDependent)
+    //     capabilities += "|deviceDependent";
+
+    // if (ini().usePluginAsSettingsOrigin)
+    //     capabilities += "|usePluginAsSettingsOrigin";
+
+    // // Delete first '|', if any.
+    // if (!capabilities.empty() && capabilities.at(0) == '|')
+    //     capabilities.erase(0, 1);
+
+    // return capabilities;
 }
 
 /**
@@ -271,7 +282,7 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     /// Attempt to login when hostname / port / account / password valid
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
         server.login(hostname, port, account, password);
-        // auto res = server.getLicense();
+        auto res = server.getLicense();
         // NX_PRINT << "hello!" << res.get();
     }
 
