@@ -6,6 +6,8 @@
 #include <memory>
 #include <future>
 
+#include "./../lib/rxcpp/rx.hpp"
+
 #include "./../val/result.h"
 
 namespace nx {
@@ -25,7 +27,9 @@ private:
     std::string password;
 
 private:
-    typedef val::Result<std::string>
+    typedef std::string
+            Message;
+    typedef val::Result<Message>
             MessageType;
     typedef std::shared_future<MessageType>
             FutureMessageType;
@@ -37,6 +41,7 @@ public:
 
     /* #region LOGIN */
 private:
+    rxcpp::subjects::behavior<std::shared_ptr<Message>> sj_shared_token;
     std::shared_ptr<FutureMessageType> shared_token;
 public:
     std::shared_ptr<FutureMessageType> login(
@@ -47,7 +52,9 @@ public:
     std::unique_lock<std::mutex> acquire_login_lock();
 
     bool getLogined();
+private:
     void set_shared_token(std::shared_ptr<FutureMessageType> o);
+public:
     std::shared_ptr<FutureMessageType> get_shared_token();
     /* #endregion LOGIN */
 
@@ -78,7 +85,9 @@ public:
         int count;
     };
 private:
-    typedef val::Result<CLicenseInfo>
+    typedef CLicenseInfo
+            LicenseMessage;
+    typedef val::Result<LicenseMessage>
             LicenseMessageType;
     typedef std::shared_future<LicenseMessageType>
             FutureLicenseMessageType;
@@ -86,6 +95,7 @@ private:
 private:
     LicenseMessageType licenseInfo;
     void setLicenseInfo(LicenseMessageType o);
+public:
     LicenseMessageType getLicenseInfo();
 public:
     FutureLicenseMessageType getLicense();

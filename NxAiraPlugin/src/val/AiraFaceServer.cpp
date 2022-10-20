@@ -24,6 +24,7 @@ const std::string TIMEOUT = std::string("Request timed out");
 
 AiraFaceServer::AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine) :
 engine(engine),
+sj_shared_token(nullptr),
 token_maintain(&AiraFaceServer::maintain_handler, this)
 {
     token_maintain.detach();
