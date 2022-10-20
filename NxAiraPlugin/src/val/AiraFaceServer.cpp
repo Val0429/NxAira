@@ -24,18 +24,16 @@ const std::string TIMEOUT = std::string("Request timed out");
 
 AiraFaceServer::AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine) :
 engine(engine),
-sj_shared_token(nullptr),
 token_maintain(&AiraFaceServer::maintain_handler, this)
 {
     token_maintain.detach();
 }
 
-/* #region LOGIN */
-std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::login(
+decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::login(
         std::string hostname, std::string port,
         std::string username, std::string password
 ) {
-    auto lk = acquire_login_lock();
+    auto lk = tokenHolder.lock();
 
     this->hostname = hostname;
     this->port = port;
@@ -47,10 +45,10 @@ std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::login(
     std::string url = baseUrl(uri);
 
     /// send request
-    AiraFaceServer::FutureMessageType result = std::async(std::launch::async, [this, url]() {
+    decltype(tokenHolder)::FutureMessageType result = std::async(std::launch::async, [this, url]() {
 
         std::string jsonString, err;
-        MessageType res;
+        decltype(tokenHolder)::MessageType res;
         do {
             try {
                 http::Request request {url};
@@ -87,23 +85,23 @@ R"json(
         return res;
 
     });
-    
-    shared_token = std::make_shared<AiraFaceServer::FutureMessageType>(std::move(result));
-    return shared_token;
+
+    tokenHolder.setFuture(std::move(result), true);
+    return tokenHolder.getFuture(true);
 }
 
-std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::login(bool force = false) {
+decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::login(bool force = false) {
     if (force) {
         return this->login(
             this->hostname, this->port,
             this->username, this->password
         );
     }
-    return get_shared_token();
+    return tokenHolder.getFuture();
 }
 
 bool AiraFaceServer::getLogined() {
-    auto token = get_shared_token();
+    auto token = tokenHolder.getFuture();
     /// case 1: not initial yet
     if (token == nullptr) return false;
     /// case 2: not ready
@@ -113,38 +111,24 @@ bool AiraFaceServer::getLogined() {
     if (!token->get().isOk()) return false;
     return true;
 }
-
-void AiraFaceServer::set_shared_token(std::shared_ptr<FutureMessageType> o) {
-    auto lk = acquire_login_lock();
-    shared_token = std::move(o);
-}
-std::shared_ptr<AiraFaceServer::FutureMessageType> AiraFaceServer::get_shared_token() {
-    auto lk = acquire_login_lock();
-    return shared_token;
-}
-
-std::unique_lock<std::mutex> AiraFaceServer::acquire_login_lock() {
-    static std::mutex mtx_login;
-    return std::unique_lock<std::mutex>(mtx_login);
-}
 /* #endregion LOGIN */
 
 /* #region MAINTAIN */
-AiraFaceServer::FutureMessageType AiraFaceServer::maintain() {
+decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::maintain() {
     NX_DEBUG_STREAM << PR_HEAD << "maintain token start" NX_DEBUG_ENDL;
     /// concat fullUrl
     const std::string uri = "/maintaintoken";
     std::string url = baseUrl(uri);
 
     /// send request
-    FutureMessageType result = std::async(std::launch::async, [this, url]() {
+    decltype(tokenHolder)::FutureMessageType result = std::async(std::launch::async, [this, url]() {
 
 #ifdef DEBUG
 NX_DEBUG_STREAM << "b11111111111111111111" NX_DEBUG_ENDL;
 #endif
 
         std::string jsonString, err;
-        MessageType res;
+        decltype(tokenHolder)::MessageType res;
         do {
             auto token_future = this->login();
             auto status = token_future->wait_for(std::chrono::milliseconds(1000));
@@ -152,7 +136,7 @@ NX_DEBUG_STREAM << "b11111111111111111111" NX_DEBUG_ENDL;
                 res = val::error(val::ErrorCode::networkError, "maintain token timeout@login");
                 break;
             }
-            MessageType token = token_future->get();
+            auto token = token_future->get();
             if (!token.isOk()) {
                 res = token;
                 break;
@@ -211,7 +195,7 @@ NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;
         return res;
     });
     
-    return result;
+    return std::make_shared<decltype(tokenHolder)::FutureMessageType>(std::move(result));
 }
 
 void AiraFaceServer::maintain_handler() {
@@ -222,7 +206,7 @@ NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
 
     try {
         while (true) {
-            auto token = get_shared_token();
+            auto token = tokenHolder.getFuture();
 #ifdef DEBUG
 NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
 #endif
@@ -248,7 +232,7 @@ NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
 #endif
 
             auto res = this->maintain();
-            MessageType mtoken = res.get();
+            auto mtoken = res->get();
             if (mtoken.isOk()) {
                 NX_DEBUG_STREAM << PR_HEAD << MAINTAIN_HEAD << "status: success" NX_DEBUG_ENDL;
                 std::this_thread::sleep_for(std::chrono::milliseconds(5000));
@@ -299,7 +283,7 @@ AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
                 NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
-            MessageType token = token_future->get();
+            auto token = token_future->get();
             if (!token.isOk()) {
                 res = val::error(val::ErrorCode::networkError, msg_err_get_token + "[2]");
                 break;
@@ -383,7 +367,7 @@ AiraFaceServer::FutureLicenseMessageType AiraFaceServer::setLicense(const std::s
                 NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
-            MessageType token = token_future->get();
+            auto token = token_future->get();
             if (!token.isOk()) {
                 res = val::error(val::ErrorCode::networkError, msg_err_get_token + "[2]");
                 break;

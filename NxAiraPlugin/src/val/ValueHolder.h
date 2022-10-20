@@ -8,9 +8,14 @@
 
 #include "./../val/result.h"
 
+namespace val {
+
 template<typename ValueType>
 class ValueHolder {
-private:
+public:
+    ValueHolder<ValueType>() : subject(nullptr) {}
+
+public:
     typedef ValueType
             Message;
     typedef val::Result<Message>
@@ -22,25 +27,30 @@ private:
 private:
     std::shared_ptr<FutureMessageType> future;
 public:
-    std::unique_lock<std::mutex> acquire_future_lock() {
+    std::unique_lock<std::mutex> lock() {
         static std::mutex mtx;
         return std::unique_lock<std::mutex>(mtx);
     }
-private:
-    void setFuture(std::shared_ptr<FutureMessageType> future) {
-        acquire_future_lock();
-        this->future = future;
-    }
 public:
-    std::shared_ptr<FutureMessageType> getFuture() {
-        acquire_future_lock();
-        return future;
+    void setFuture(FutureMessageType&& future, bool noLock = false) {
+        if (noLock) this->future = std::make_shared<FutureMessageType>(std::move(future));
+        else { auto lk = lock(); this->future = std::make_shared<FutureMessageType>(std::move(future)); }
+    }
+    std::shared_ptr<FutureMessageType> getFuture(bool noLock = false) {
+        if (noLock) return future;
+        auto lk = lock(); return future;
     }
 
 /// subject
 private:
     rxcpp::subjects::behavior<std::shared_ptr<Message>> subject;
-    void onNext(Message o);
 public:
-    rxcpp::subjects::obserable<std::shared_ptr<Message>> getObservable();
+    void onNext(Message o) {
+        subject.on_next(std::move(o));
+    }
+    rxcpp::observable<std::shared_ptr<Message>> getObservable() {
+        return subject.get_observable();
+    }
 };
+
+}

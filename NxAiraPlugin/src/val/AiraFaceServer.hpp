@@ -5,10 +5,10 @@
 #include <string>
 #include <memory>
 #include <future>
+#include <mutex>
 
-#include "./../lib/rxcpp/rx.hpp"
 
-#include "./../val/result.h"
+#include "./../val/ValueHolder.h"
 
 namespace nx {
     namespace vms_server_plugins {
@@ -27,35 +27,20 @@ private:
     std::string password;
 
 private:
-    typedef std::string
-            Message;
-    typedef val::Result<Message>
-            MessageType;
-    typedef std::shared_future<MessageType>
-            FutureMessageType;
-
-private:
     nx::vms_server_plugins::analytics::aira::Engine& engine;
 public:
     AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine);
 
     /* #region LOGIN */
 private:
-    rxcpp::subjects::behavior<std::shared_ptr<Message>> sj_shared_token;
-    std::shared_ptr<FutureMessageType> shared_token;
+    val::ValueHolder<std::string> tokenHolder;
 public:
-    std::shared_ptr<FutureMessageType> login(
+    decltype(tokenHolder.getFuture()) login(
         std::string hostname, std::string port,
         std::string username, std::string password
         );
-    std::shared_ptr<FutureMessageType> login(bool force);
-    std::unique_lock<std::mutex> acquire_login_lock();
-
+    decltype(tokenHolder.getFuture()) login(bool force);
     bool getLogined();
-private:
-    void set_shared_token(std::shared_ptr<FutureMessageType> o);
-public:
-    std::shared_ptr<FutureMessageType> get_shared_token();
     /* #endregion LOGIN */
 
     /* #region MAINTAIN */
@@ -63,7 +48,7 @@ private:
     std::thread token_maintain;
     void maintain_handler();
 public:
-    FutureMessageType maintain();
+    decltype(tokenHolder.getFuture()) maintain();
     /* #endregion MAINTAIN */
 
     /* #region LICENSE */
