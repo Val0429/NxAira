@@ -70,22 +70,10 @@ public:
         int count;
     };
 private:
-    typedef CLicenseInfo
-            LicenseMessage;
-    typedef val::Result<LicenseMessage>
-            LicenseMessageType;
-    typedef std::shared_future<LicenseMessageType>
-            FutureLicenseMessageType;
-
-private:
-    LicenseMessageType licenseInfo;
-    void setLicenseInfo(LicenseMessageType o);
+    val::ValueHolder<CLicenseInfo> licenseHolder;
 public:
-    LicenseMessageType getLicenseInfo();
-public:
-    FutureLicenseMessageType getLicense();
-    FutureLicenseMessageType setLicense(const std::string license);
-    std::unique_lock<std::mutex> acquire_license_lock();
+    decltype(licenseHolder.getFuture()) getLicense();
+    decltype(licenseHolder.getFuture()) setLicense(const std::string license);
     /* #endregion LICENSE */
 
 private:

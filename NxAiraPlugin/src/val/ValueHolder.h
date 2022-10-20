@@ -32,9 +32,10 @@ public:
         return std::unique_lock<std::mutex>(mtx);
     }
 public:
-    void setFuture(FutureMessageType&& future, bool noLock = false) {
+    std::shared_ptr<FutureMessageType> setFuture(FutureMessageType&& future, bool noLock = false) {
         if (noLock) this->future = std::make_shared<FutureMessageType>(std::move(future));
         else { auto lk = lock(); this->future = std::make_shared<FutureMessageType>(std::move(future)); }
+        return this->future;
     }
     std::shared_ptr<FutureMessageType> getFuture(bool noLock = false) {
         if (noLock) return future;
@@ -46,7 +47,9 @@ private:
     rxcpp::subjects::behavior<std::shared_ptr<Message>> subject;
 public:
     void onNext(Message o) {
-        subject.on_next(std::move(o));
+        subject.get_subscriber().on_next(
+            std::make_shared<Message>(std::move(o))
+            );
     }
     rxcpp::observable<std::shared_ptr<Message>> getObservable() {
         return subject.get_observable();

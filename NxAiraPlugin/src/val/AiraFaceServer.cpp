@@ -29,6 +29,7 @@ token_maintain(&AiraFaceServer::maintain_handler, this)
     token_maintain.detach();
 }
 
+/* #region LOGIN */
 decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::login(
         std::string hostname, std::string port,
         std::string username, std::string password
@@ -82,12 +83,12 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::LoginSuccess : EventCode::LoginFailed, res);
+        if (res.isOk()) tokenHolder.onNext(res.value());
         return res;
 
     });
 
-    tokenHolder.setFuture(std::move(result), true);
-    return tokenHolder.getFuture(true);
+    return tokenHolder.setFuture(std::move(result), true);
 }
 
 decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::login(bool force = false) {
@@ -251,23 +252,15 @@ NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
 /* #endregion MAINTAIN */
 
 /* #region LICENSE */
-void AiraFaceServer::setLicenseInfo(AiraFaceServer::LicenseMessageType o) {
-    auto lk = acquire_license_lock();
-    licenseInfo = std::move(o);
-}
-AiraFaceServer::LicenseMessageType AiraFaceServer::getLicenseInfo() {
-    auto lk = acquire_license_lock();
-    return licenseInfo;
-}
-AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
+decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense() {
     /// concat fullUrl
     const std::string uri = "/license";
     std::string url = baseUrl(uri);
 
     /// send request
-    FutureLicenseMessageType result = std::async(std::launch::async, [this, url]() {
+    decltype(licenseHolder)::FutureMessageType result = std::async(std::launch::async, [this, url]() {
         std::string jsonString, err;
-        LicenseMessageType res;
+        decltype(licenseHolder)::MessageType res;
 
         /// messages
         const std::string msg_err_get_token = "fetch token timeout@getlicense";
@@ -337,21 +330,21 @@ AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
         res = info;
 #endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
-        setLicenseInfo(res);
+        if (res.isOk()) licenseHolder.onNext(res.value());
         return res;
     });
     
-    return result;
+    return licenseHolder.setFuture(std::move(result), true);
 }
-AiraFaceServer::FutureLicenseMessageType AiraFaceServer::setLicense(const std::string license) {
+decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::setLicense(const std::string license) {
     /// concat fullUrl
     const std::string uri = "/license";
     std::string url = baseUrl(uri);
 
     /// send request
-    FutureLicenseMessageType result = std::async(std::launch::async, [this, url, license]() {
+    decltype(licenseHolder)::FutureMessageType result = std::async(std::launch::async, [this, url, license]() {
         std::string jsonString, err;
-        LicenseMessageType res;
+        decltype(licenseHolder)::MessageType res;
 
         /// messages
         const std::string msg_err_get_token = "fetch token timeout@setlicense";
@@ -412,15 +405,11 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::SetLicenseSuccess : EventCode::SetLicenseFailed, res);
-        setLicenseInfo(res);
+        if (res.isOk()) licenseHolder.onNext(res.value());
         return res;
     });
     
-    return result;
-}
-std::unique_lock<std::mutex> AiraFaceServer::acquire_license_lock() {
-    static std::mutex mtx_license;
-    return std::unique_lock<std::mutex>(mtx_license);
+    return licenseHolder.setFuture(std::move(result), true);
 }
 /* #endregion LICENSE */
 
