@@ -25,18 +25,16 @@ enum class ErrorCode: int
 class Error
 {
 public:
-    Error(ErrorCode errorCode, const IString* errorMessage):
+    Error(ErrorCode errorCode, const std::string& errorMessage):
         m_errorCode(errorCode), m_errorMessage(errorMessage)
-    {
-    }
+    {}
 
-    bool isOk() const
-    {
-        return m_errorCode == ErrorCode::noError && m_errorMessage == nullptr;
+    bool isOk() const {
+        return m_errorCode == ErrorCode::noError && m_errorMessage.size() == 0;
     }
 
     ErrorCode errorCode() const { return m_errorCode; }
-    const IString* errorMessage() const { return m_errorMessage; }
+    const std::string errorMessage() const { return m_errorMessage; }
 
     Error(Error&&) = default;
     Error(const Error&) = default;
@@ -44,15 +42,15 @@ public:
 
 private:
     ErrorCode m_errorCode;
-    const IString* m_errorMessage;
+    std::string m_errorMessage;
 };
 
 template<typename Value>
 class Result {
 public:
-    Result(): m_error(ErrorCode::noError, nullptr) {}
+    Result(): m_error(ErrorCode::noError, "") {}
 
-    Result(Value value): m_error(ErrorCode::noError, nullptr), m_value(std::move(value)) {}
+    Result(Value value): m_error(ErrorCode::noError, ""), m_value(std::move(value)) {}
 
     Result(Error&& error): m_error(std::move(error)) {}
 
@@ -69,7 +67,7 @@ public:
     }
 
     Result& operator=(Value value) {
-        m_error = Error{ErrorCode::noError, nullptr};
+        m_error = Error{ErrorCode::noError, ""};
         m_value = value;
         return *this;
     }

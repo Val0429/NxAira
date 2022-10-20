@@ -18,6 +18,8 @@
 
 namespace val {
 
+const std::string TIMEOUT = std::string("Request timed out");
+
 AiraFaceServer::AiraFaceServer() :
 token_maintain(&AiraFaceServer::maintain_handler, this)
 {
@@ -71,7 +73,7 @@ R"json(
                 break;
 
             } catch(const std::exception& ex) {
-                res = val::error(val::ErrorCode::otherError, ex.what());
+                res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
                 NX_DEBUG_STREAM << PR_HEAD << LOGIN_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
@@ -192,7 +194,7 @@ NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;
                 break;
 
             } catch(const std::exception& ex) {
-                res = val::error(val::ErrorCode::otherError, ex.what());
+                res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
                 NX_DEBUG_STREAM << PR_HEAD << LOGIN_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
@@ -377,7 +379,7 @@ AiraFaceServer::FutureLicenseMessageType AiraFaceServer::getLicense() {
                 break;
 
             } catch(const std::exception& ex) {
-                res = val::error(val::ErrorCode::otherError, ex.what());
+                res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
                 NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
@@ -453,7 +455,7 @@ R"json(
                 break;
 
             } catch(const std::exception& ex) {
-                res = val::error(val::ErrorCode::otherError, ex.what());
+                res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
                 NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << res NX_DEBUG_ENDL;
                 break;
             }
