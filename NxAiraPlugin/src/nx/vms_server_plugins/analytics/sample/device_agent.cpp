@@ -57,6 +57,12 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
 
     return settingsResponse;
 }
+void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const {
+    /// updating immediately
+    auto settingsResponse = new SettingsResponse();
+    settingsResponse->setModel(engine.getManifestModel());
+    *outResult = settingsResponse;
+}
 
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
     bool motion_detected = detectMotion(videoPacket);

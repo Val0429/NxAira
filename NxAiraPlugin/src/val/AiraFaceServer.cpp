@@ -83,7 +83,7 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::LoginSuccess : EventCode::LoginFailed, res);
-        if (res.isOk()) tokenHolder.onNext(res.value());
+        tokenHolder.onNext(res);
         return res;
 
     });
@@ -358,9 +358,7 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
         res = info;
 #endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
-        if (res.isOk()) {
-            licenseHolder.onNext(res.value());
-        }
+        if (res.isOk()) licenseHolder.onNext(res);
         return res;
     });
     
@@ -435,7 +433,7 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::SetLicenseSuccess : EventCode::SetLicenseFailed, res);
-        if (res.isOk()) licenseHolder.onNext(res.value());
+        if (res.isOk()) licenseHolder.onNext(res);
         return res;
     });
     

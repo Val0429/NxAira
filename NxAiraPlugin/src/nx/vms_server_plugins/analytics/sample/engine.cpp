@@ -99,7 +99,7 @@ std::string Engine::manifestString() const {
 
 std::string Engine::getManifestModel() const {
     auto licenseInfo = server.licenseHolder.getValue();
-    bool isNull = licenseInfo == nullptr;
+    bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
 
     return /*suppress newline*/ 1 + (const char*) R"json(
     {
@@ -118,7 +118,7 @@ std::string Engine::getManifestModel() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": ")json" + (isNull ? "No License" : licenseInfo->license) + R"json("
+                            "opt1": ")json" + (isNull ? "No License" : licenseInfo->value().license) + R"json("
                         }
                     },
                     {
@@ -129,7 +129,7 @@ std::string Engine::getManifestModel() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": ")json" + std::to_string(licenseUsed) + R"json( / )json" + (isNull ? "0" : std::to_string(licenseInfo->count)) + R"json("
+                            "opt1": ")json" + std::to_string(licenseUsed) + R"json( / )json" + (isNull ? "0" : std::to_string(licenseInfo->value().count)) + R"json("
                         }
                     }
                 ]
@@ -321,10 +321,10 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
 
 void Engine::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const {
     auto licenseInfo = server.licenseHolder.getValue();
-    bool isNull = licenseInfo == nullptr;
+    bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
 
     auto settingsResponse = new SettingsResponse();
-    if (!isNull) settingsResponse->setValue(kAirafaceLicenseSetting, licenseInfo->license);
+    if (!isNull) settingsResponse->setValue(kAirafaceLicenseSetting, licenseInfo->value().license);
 
     *outResult = settingsResponse;
 }
