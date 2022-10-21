@@ -12,6 +12,7 @@ namespace aira {
 
 static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const char*) R"json(
 {
+    "capabilities": "disableStreamSelection",
     "supportedTypes":
     [
         {

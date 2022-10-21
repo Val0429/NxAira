@@ -211,23 +211,49 @@ NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
 #ifdef DEBUG
 NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
 #endif
+            // /// login failed because of network error
+            // if (token != nullptr) {
+            //     auto status = token->wait_for(std::chrono::milliseconds(0));
+            //     if (status == std::future_status::ready && !token->get().isOk()) {
+            //         auto token_result = token->get();
+            //         if (token_result.error().errorCode() == val::ErrorCode::networkError) {
+            //             NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
+            //             this->login(true);
+            //             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            //             continue;
+            //         }
+            //         /// 2nd case, wait for login
+            //         NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+            //         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            //         continue;
+            //     }
+            // }
+
             /// login failed because of network error
-            if (token != nullptr) {
+            if (token == nullptr) {
+                /// 2nd case, wait for login
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                continue;
+            } else {
                 auto status = token->wait_for(std::chrono::milliseconds(0));
-                if (status == std::future_status::ready && !token->get().isOk()) {
+                if (status == std::future_status::ready) {
                     auto token_result = token->get();
-                    if (token_result.error().errorCode() == val::ErrorCode::networkError) {
-                        NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
-                        this->login(true);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                    if (!token_result.isOk()) {
+                        if (token_result.error().errorCode() == val::ErrorCode::networkError) {
+                            NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
+                            this->login(true);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                        } else {
+                            /// 2nd case, wait for login
+                            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        }
                         continue;
                     }
-                    /// 2nd case, wait for login
-                    NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                    continue;
                 }
             }
+
 #ifdef DEBUG
 NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
 #endif
@@ -243,6 +269,8 @@ NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
             this->login(true);
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             continue;
+
+cnt:;
         }
 
     } catch (const std::exception& ex) {
