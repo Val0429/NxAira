@@ -5,6 +5,7 @@
 #include "ini.h"
 
 #include <nx/kit/debug.h>
+#include <nx/sdk/helpers/settings_response.h>
 
 #include "settings_model.h"
 
@@ -316,6 +317,16 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
 
     return nullptr;
+}
+
+void Engine::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const {
+    auto licenseInfo = server.licenseHolder.getValue();
+    bool isNull = licenseInfo == nullptr;
+
+    auto settingsResponse = new SettingsResponse();
+    if (!isNull) settingsResponse->setValue(kAirafaceLicenseSetting, licenseInfo->license);
+
+    *outResult = settingsResponse;
 }
 
 void Engine::pushEvent(
