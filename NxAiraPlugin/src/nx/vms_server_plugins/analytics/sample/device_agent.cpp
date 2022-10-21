@@ -14,6 +14,7 @@
 #include <nx/sdk/analytics/helpers/object_metadata.h>
 #include <nx/sdk/analytics/helpers/object_metadata_packet.h>
 #include <nx/sdk/analytics/i_motion_metadata_packet.h>
+#include <nx/sdk/helpers/settings_response.h>
 
 #include "ini.h"
 #include "device_agent_manifest.h"
@@ -27,12 +28,16 @@ using namespace nx::sdk;
 using namespace nx::sdk::analytics;
 
 
-DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
+DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
+    engine(engine),
+    doUnref(std::move(doUnref)),
     motionProvider(*this)
     {}
 
-DeviceAgent::~DeviceAgent() {}
+DeviceAgent::~DeviceAgent() {
+    doUnref();
+}
 
 std::string DeviceAgent::manifestString() const {
     return kDeviceAgentManifest;
@@ -46,7 +51,11 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     // Convert Type
     // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
 
-    return nullptr;
+    const auto settingsResponse = new nx::sdk::SettingsResponse();
+    settingsResponse->setModel(engine.getManifestModel());
+    pushManifest(manifestString());
+
+    return settingsResponse;
 }
 
 bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {

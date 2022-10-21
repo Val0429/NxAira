@@ -19,8 +19,12 @@ using namespace nx::sdk::analytics;
 Engine::Engine():
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
     nx::sdk::analytics::Engine(/*enableOutput*/ true),
+    licenseUsed(0),
     server(*this)
 {
+    // server.licenseHolder.getObservable().subscribe([this](auto o) {
+    //     pushManifest(manifestString());
+    // });
 }
 
 Engine::~Engine()
@@ -38,7 +42,10 @@ Engine::~Engine()
  */
 void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDeviceInfo* deviceInfo)
 {
-    *outResult = new DeviceAgent(deviceInfo);
+    *outResult = new DeviceAgent(deviceInfo, *this, [this]() {
+        licenseUsed--;
+    });
+    licenseUsed++;
 }
 
 /**
@@ -77,8 +84,6 @@ static std::string buildCapabilities() {
  */
 /// metadata_sdk\src\nx\sdk\settings_model.md
 std::string Engine::manifestString() const {
-    // auto license = server.getLicenseInfo();
-
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
     "version": "1.0.0",
@@ -86,6 +91,16 @@ std::string Engine::manifestString() const {
     "streamTypeFilter": "motion|compressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
+)json" + getManifestModel() + R"json(
+}
+)json";
+}
+
+std::string Engine::getManifestModel() const {
+    auto licenseInfo = server.licenseHolder.getValue();
+    bool isNull = licenseInfo == nullptr;
+
+    return /*suppress newline*/ 1 + (const char*) R"json(
     {
         "type": "Settings",
         "items":
@@ -102,7 +117,7 @@ std::string Engine::manifestString() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": "No License"
+                            "opt1": ")json" + (isNull ? "No License" : licenseInfo->license) + R"json("
                         }
                     },
                     {
@@ -113,7 +128,7 @@ std::string Engine::manifestString() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": "0 / 0"
+                            "opt1": ")json" + std::to_string(licenseUsed) + R"json( / )json" + (isNull ? "0" : std::to_string(licenseInfo->count)) + R"json("
                         }
                     }
                 ]
@@ -262,7 +277,6 @@ std::string Engine::manifestString() const {
             }            
         ]
     }
-}
 )json";
 }
 

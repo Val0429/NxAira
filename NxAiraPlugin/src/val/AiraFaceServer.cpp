@@ -330,7 +330,9 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
         res = info;
 #endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
-        if (res.isOk()) licenseHolder.onNext(res.value());
+        if (res.isOk()) {
+            licenseHolder.onNext(res.value());
+        }
         return res;
     });
     

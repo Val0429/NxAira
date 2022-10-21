@@ -17,9 +17,14 @@ namespace vms_server_plugins {
 namespace analytics {
 namespace aira {
 
+class Engine;
+
 class DeviceAgent: public nx::sdk::analytics::ConsumingDeviceAgent {
+private:
+    nx::vms_server_plugins::analytics::aira::Engine& engine;
+    std::function<void(void)> doUnref;
 public:
-    DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo);
+    DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref);
     virtual ~DeviceAgent() override;
 
 protected:

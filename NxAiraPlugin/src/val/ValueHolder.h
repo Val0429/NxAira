@@ -54,6 +54,9 @@ public:
     rxcpp::observable<std::shared_ptr<Message>> getObservable() {
         return subject.get_observable();
     }
+    std::shared_ptr<Message> getValue() const {
+        return subject.get_value();
+    }
 };
 
 }

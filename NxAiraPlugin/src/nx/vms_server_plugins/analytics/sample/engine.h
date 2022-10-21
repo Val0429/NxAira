@@ -22,6 +22,8 @@ public:
 protected:
     virtual std::string manifestString() const override;
     virtual nx::sdk::Result<const nx::sdk::ISettingsResponse*> settingsReceived() override;
+public:
+    std::string getManifestModel() const;
 
 protected:
     virtual void doObtainDeviceAgent(
@@ -34,6 +36,7 @@ public:
         std::string caption,
         const std::string& description);
 private:
+    int licenseUsed;
     val::AiraFaceServer server;
 };
 

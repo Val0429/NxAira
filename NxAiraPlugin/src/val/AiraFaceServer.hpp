@@ -32,7 +32,7 @@ public:
     AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine);
 
     /* #region LOGIN */
-private:
+public:
     val::ValueHolder<std::string> tokenHolder;
 public:
     decltype(tokenHolder.getFuture()) login(
@@ -69,7 +69,7 @@ public:
         std::string license;
         int count;
     };
-private:
+public:
     val::ValueHolder<CLicenseInfo> licenseHolder;
 public:
     decltype(licenseHolder.getFuture()) getLicense();
