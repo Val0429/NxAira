@@ -33,6 +33,7 @@ private:
     const nx::sdk::analytics::ConsumingDeviceAgent& deviceAgent;
 
 private:
+    std::string faceType;
     std::unique_ptr<DeviceAgentMotionFaceUnit> faceUnit;
     int m_frameIndex;
     int m_targetFrame;

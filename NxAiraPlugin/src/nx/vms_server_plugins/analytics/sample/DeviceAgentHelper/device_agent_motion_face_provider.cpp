@@ -40,6 +40,8 @@ Ptr<ObjectMetadata> DeviceAgentMotionFaceProvider::feedWithMotion(bool hasMotion
 
     /// make faceUnit
     if (faceUnit == nullptr && hasMotion) {
+        int rand = static_cast<int>(std::rand()%2);
+        faceType = rand == 0 ? "nx.base.Person" : "nx.base.Face";
         faceUnit = std::make_unique<DeviceAgentMotionFaceUnit>(
             randString(kNames),
             randString(kColors),
@@ -52,8 +54,11 @@ Ptr<ObjectMetadata> DeviceAgentMotionFaceProvider::feedWithMotion(bool hasMotion
     if (faceUnit == nullptr) return nullptr;
 
     /// make ObjectMetadata
+    int rand = static_cast<int>(std::rand()%2);
+
     auto objectMetadata = makePtr<ObjectMetadata>();
-    objectMetadata->setTypeId("nx.base.Person");
+    // objectMetadata->setTypeId("nx.base.Person");
+    objectMetadata->setTypeId(faceType);
     objectMetadata->addAttribute(makePtr<Attribute>("Name", faceUnit->name));
     objectMetadata->addAttribute(makePtr<Attribute>("Top Clothing Color", faceUnit->upperClothesColor));
     objectMetadata->addAttribute(makePtr<Attribute>("Bottom Clothing Color", faceUnit->lowerClothesColor));

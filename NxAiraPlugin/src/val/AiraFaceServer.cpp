@@ -124,9 +124,9 @@ decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::maintain() {
     /// send request
     decltype(tokenHolder)::FutureMessageType result = std::async(std::launch::async, [this, url]() {
 
-#ifdef DEBUG
-NX_DEBUG_STREAM << "b11111111111111111111" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "b11111111111111111111" NX_DEBUG_ENDL;
+// #endif
 
         std::string jsonString, err;
         decltype(tokenHolder)::MessageType res;
@@ -143,17 +143,17 @@ NX_DEBUG_STREAM << "b11111111111111111111" NX_DEBUG_ENDL;
                 break;
             }
 
-#ifdef DEBUG
-NX_DEBUG_STREAM << "b22222222222222222222" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "b22222222222222222222" NX_DEBUG_ENDL;
+// #endif
 
             /// actual request
             try {
                 http::Request request {url};
 
-#ifdef DEBUG
-NX_DEBUG_STREAM << "b333333333333333333" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "b333333333333333333" NX_DEBUG_ENDL;
+// #endif
 
                 const auto response = request.send("POST",
     R"json(
@@ -166,9 +166,9 @@ NX_DEBUG_STREAM << "b333333333333333333" NX_DEBUG_ENDL;
                     {"token", token.value()}
                 }, std::chrono::milliseconds(1000));
 
-#ifdef DEBUG
-NX_DEBUG_STREAM << "b4444444444444444444444" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "b4444444444444444444444" NX_DEBUG_ENDL;
+// #endif
 
                 jsonString = std::string {response.body.begin(), response.body.end()};
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
@@ -178,9 +178,9 @@ NX_DEBUG_STREAM << "b4444444444444444444444" NX_DEBUG_ENDL;
                     break;
                 }
 
-#ifdef DEBUG
-NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;            
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;            
+// #endif
 
                 NX_DEBUG_STREAM << "[AiraFaceServer] maintain function successfully" NX_DEBUG_ENDL;
                 res = json["token"].string_value();
@@ -200,17 +200,17 @@ NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;
 }
 
 void AiraFaceServer::maintain_handler() {
-#ifdef DEBUG
-NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
+// #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     try {
         while (true) {
             auto token = tokenHolder.getFuture();
-#ifdef DEBUG
-NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
+// #endif
             /// login failed because of network error
             if (token != nullptr) {
                 auto status = token->wait_for(std::chrono::milliseconds(0));
@@ -228,9 +228,9 @@ NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
                     continue;
                 }
             }
-#ifdef DEBUG
-NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
-#endif
+// #ifdef DEBUG
+// NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
+// #endif
 
             auto res = this->maintain();
             auto mtoken = res->get();
