@@ -36,7 +36,7 @@ DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_
     {}
 
 DeviceAgent::~DeviceAgent() {
-    doUnref();
+    if (doUnref != nullptr) doUnref();
 }
 
 std::string DeviceAgent::manifestString() const {

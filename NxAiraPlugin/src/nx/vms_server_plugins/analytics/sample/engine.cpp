@@ -41,8 +41,7 @@ Engine::~Engine()
  * @param deviceInfo Contains various information about the related device such as its id, vendor,
  *     model, etc.
  */
-void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDeviceInfo* deviceInfo)
-{
+void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDeviceInfo* deviceInfo) {
     *outResult = new DeviceAgent(deviceInfo, *this, [this]() {
         licenseUsed--;
     });
