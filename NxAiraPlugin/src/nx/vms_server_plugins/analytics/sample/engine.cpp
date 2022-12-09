@@ -100,6 +100,18 @@ std::string Engine::getManifestModel() const {
     auto licenseInfo = server.licenseHolder.getValue();
     bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
 
+                    // {
+                    //     "type": "RadioButtonGroup",
+                    //     "name": "LicenseID",
+                    //     "caption": "License ID",
+                    //     "description": "",
+                    //     "defaultValue": "opt1",
+                    //     "range": ["opt1"],
+                    //     "itemCaptions": {
+                    //         "opt1": ")json" + (isNull ? "No License" : licenseInfo->value().license) + R"json("
+                    //     }
+                    // },
+
     return /*suppress newline*/ 1 + (const char*) R"json(
     {
         "type": "Settings",
@@ -109,17 +121,6 @@ std::string Engine::getManifestModel() const {
                 "type": "GroupBox",
                 "caption": "License Info",
                 "items": [
-                    {
-                        "type": "RadioButtonGroup",
-                        "name": "LicenseID",
-                        "caption": "License ID",
-                        "description": "",
-                        "defaultValue": "opt1",
-                        "range": ["opt1"],
-                        "itemCaptions": {
-                            "opt1": ")json" + (isNull ? "No License" : licenseInfo->value().license) + R"json("
-                        }
-                    },
                     {
                         "type": "RadioButtonGroup",
                         "name": "SupportChannels",
@@ -151,20 +152,20 @@ std::string Engine::getManifestModel() const {
                             {
                                 "type": "SpinBox",
                                 "name": "MinimumFaceSize",
-                                "caption": "Minimum FaceSize",
+                                "caption": "Minimum Face Size",
                                 "description": "The minimum face size to detect. (0-150)",
                                 "defaultValue": 30,
                                 "minValue": 0,
                                 "maxValue": 150
                             },
                             {
-                                "type": "SpinBox",
+                                "type": "DoubleSpinBox",
                                 "name": "FRRecognitionScore",
                                 "caption": "Recognition Score",
-                                "description": "The score to find correct person. The higher the more accurate. (65-100)",
-                                "defaultValue": 80,
-                                "minValue": 65,
-                                "maxValue": 100
+                                "description": "The score to find correct person. The higher the more accurate. (0-1)",
+                                "defaultValue": 0.85,
+                                "minValue": 0,
+                                "maxValue": 1
                             },
                             {
                                 "type": "DoubleSpinBox",
@@ -174,15 +175,6 @@ std::string Engine::getManifestModel() const {
                                 "defaultValue": 0.5,
                                 "minValue": 0.5,
                                 "maxValue": 2
-                            },
-                            {
-                                "type": "SpinBox",
-                                "name": "FRAntispoofingScore",
-                                "caption": "Antispoofing Score",
-                                "description": "",
-                                "defaultValue": 0,
-                                "minValue": 0,
-                                "maxValue": 100
                             }
                         ]
                     },
@@ -199,8 +191,15 @@ std::string Engine::getManifestModel() const {
                             },
                             {
                                 "type": "SwitchButton",
-                                "name": "Register",
-                                "caption": "Register",
+                                "name": "Registered",
+                                "caption": "Registered",
+                                "description": "",
+                                "defaultValue": true
+                            },
+                            {
+                                "type": "SwitchButton",
+                                "name": "Visitor",
+                                "caption": "Visitor",
                                 "description": "",
                                 "defaultValue": true
                             },
@@ -283,23 +282,21 @@ std::string Engine::getManifestModel() const {
 Result<const ISettingsResponse*> Engine::settingsReceived() {
     NX_PRINT << "Handle Plugin Setting...";
 
-    const std::string license = settingValue(kAirafaceLicenseSetting);
     const std::string hostname = settingValue(kAirafaceHostSetting);
     const std::string port = settingValue(kAirafacePortSetting);
     const std::string account = settingValue(kAirafaceAccountSetting);
     const std::string password = settingValue(kAirafacePasswordSetting);
 
-    NX_PRINT << "License: " << license;
     NX_PRINT << "Host: " << hostname;
     NX_PRINT << "Port: " << port;
     NX_PRINT << "Account: " << account;
     NX_PRINT << "Password: " << password;
 
-    /// Attempt to login when hostname / port / account / password valid
+    /// 1) Starting point: Attempt to login when hostname / port / account / password valid
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
         server.login(hostname, port, account, password);
         auto res = server.getLicense();
-        // NX_PRINT << "hello!" << res.get();
+        //NX_PRINT << "hello!" << res.get();
     }
 
 
