@@ -140,7 +140,7 @@ std::string Engine::getManifestModel() const {
                 "items": [
                     {
                         "type": "SwitchButton",
-                        "name": "EnableFacialRecognition",
+                        "name": ")json" + kAirafaceEnableFacialRecognitionSetting + R"json(",
                         "caption": "Enable Facial Recognition",
                         "description": "Switch on to enable the facial recognition function",
                         "defaultValue": false
@@ -151,7 +151,7 @@ std::string Engine::getManifestModel() const {
                         "items": [
                             {
                                 "type": "SpinBox",
-                                "name": "MinimumFaceSize",
+                                "name": ")json" + kAirafaceFRMinimumFaceSizeSetting + R"json(",
                                 "caption": "Minimum Face Size",
                                 "description": "The minimum face size to detect. (0-150)",
                                 "defaultValue": 0,
@@ -160,7 +160,7 @@ std::string Engine::getManifestModel() const {
                             },
                             {
                                 "type": "DoubleSpinBox",
-                                "name": "FRRecognitionScore",
+                                "name": ")json" + kAirafaceFRRecognitionScoreSetting + R"json(",
                                 "caption": "Recognition Score",
                                 "description": "The score to find correct person. The higher the more accurate. (0-1)",
                                 "defaultValue": 0.85,
@@ -169,7 +169,7 @@ std::string Engine::getManifestModel() const {
                             },
                             {
                                 "type": "DoubleSpinBox",
-                                "name": "FRRecognitionFPS",
+                                "name": ")json" + kAirafaceFRRecognitionFPSSetting + R"json(",
                                 "caption": "Recognition FPS",
                                 "description": "How many frame per seconds to recognize. (0.5-2)",
                                 "defaultValue": 0.5,
@@ -184,28 +184,28 @@ std::string Engine::getManifestModel() const {
                         "items": [
                             {
                                 "type": "SwitchButton",
-                                "name": "Watchlist",
+                                "name": ")json" + kAirafaceFREventWatchlistSetting + R"json(",
                                 "caption": "Watchlist",
                                 "description": "",
                                 "defaultValue": true
                             },
                             {
                                 "type": "SwitchButton",
-                                "name": "Registered",
+                                "name": ")json" + kAirafaceFREventRegisteredSetting + R"json(",
                                 "caption": "Registered",
                                 "description": "",
                                 "defaultValue": true
                             },
                             {
                                 "type": "SwitchButton",
-                                "name": "Visitor",
+                                "name": ")json" + kAirafaceFREventVisitorSetting + R"json(",
                                 "caption": "Visitor",
                                 "description": "",
                                 "defaultValue": true
                             },
                             {
                                 "type": "SwitchButton",
-                                "name": "Stranger",
+                                "name": ")json" + kAirafaceFREventStrangerSetting + R"json(",
                                 "caption": "Stranger",
                                 "description": "",
                                 "defaultValue": true
@@ -221,7 +221,7 @@ std::string Engine::getManifestModel() const {
                 [
                     {
                         "type": "SwitchButton",
-                        "name": "EnablePersonDetection",
+                        "name": ")json" + kAirafaceEnablePersonDetectionSetting + R"json(",
                         "caption": "Enable Person Detection",
                         "description": "Switch on to enable the person detection function",
                         "defaultValue": false
@@ -232,7 +232,7 @@ std::string Engine::getManifestModel() const {
                         "items": [
                             {
                                 "type": "SpinBox",
-                                "name": "MinimumBodySize",
+                                "name": ")json" + kAirafacePDMinimumBodySizeSetting + R"json(",
                                 "caption": "Minimum Body Size",
                                 "description": "The minimum body size to detect. (0-150)",
                                 "defaultValue": 0,
@@ -241,7 +241,7 @@ std::string Engine::getManifestModel() const {
                             },
                             {
                                 "type": "DoubleSpinBox",
-                                "name": "PDDetectionScore",
+                                "name": ")json" + kAirafacePDDetectionScoreSetting + R"json(",
                                 "caption": "Detection Score",
                                 "description": "The score to detect correct person. The higher the more accurate. (0-1)",
                                 "defaultValue": 0.5,
@@ -250,7 +250,7 @@ std::string Engine::getManifestModel() const {
                             },
                             {
                                 "type": "DoubleSpinBox",
-                                "name": "PDRecognitionFPS",
+                                "name": ")json" + kAirafacePDRecognitionFPSSetting + R"json(",
                                 "caption": "Recognition FPS",
                                 "description": "How many frame per seconds to detect. (0.5-2)",
                                 "defaultValue": 0.5,
@@ -265,7 +265,7 @@ std::string Engine::getManifestModel() const {
                         "items": [
                             {
                                 "type": "SwitchButton",
-                                "name": "PersonDetection",
+                                "name": ")json" + kAirafacePDEventPersonDetectionSetting + R"json(",
                                 "caption": "Person Detection",
                                 "description": "",
                                 "defaultValue": true
