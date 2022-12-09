@@ -154,7 +154,7 @@ std::string Engine::getManifestModel() const {
                                 "name": "MinimumFaceSize",
                                 "caption": "Minimum Face Size",
                                 "description": "The minimum face size to detect. (0-150)",
-                                "defaultValue": 30,
+                                "defaultValue": 0,
                                 "minValue": 0,
                                 "maxValue": 150
                             },
@@ -235,18 +235,18 @@ std::string Engine::getManifestModel() const {
                                 "name": "MinimumBodySize",
                                 "caption": "Minimum Body Size",
                                 "description": "The minimum body size to detect. (0-150)",
-                                "defaultValue": 30,
+                                "defaultValue": 0,
                                 "minValue": 0,
                                 "maxValue": 150
                             },
                             {
-                                "type": "SpinBox",
-                                "name": "PDRecognitionScore",
-                                "caption": "Recognition Score",
-                                "description": "The score to detect correct person. The higher the more accurate. (65-100)",
-                                "defaultValue": 80,
-                                "minValue": 65,
-                                "maxValue": 100
+                                "type": "DoubleSpinBox",
+                                "name": "PDDetectionScore",
+                                "caption": "Detection Score",
+                                "description": "The score to detect correct person. The higher the more accurate. (0-1)",
+                                "defaultValue": 0.5,
+                                "minValue": 0,
+                                "maxValue": 1
                             },
                             {
                                 "type": "DoubleSpinBox",
