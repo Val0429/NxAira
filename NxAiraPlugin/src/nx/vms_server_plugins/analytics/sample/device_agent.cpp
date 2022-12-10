@@ -49,11 +49,6 @@ std::string DeviceAgent::manifestString() const {
 Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     std::map<std::string, std::string> settings = currentSettings();
 
-    // Val: Todo connect AiraFace
-    // settings[kAirafaceAccountSetting];
-    // Convert Type
-    // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
-
     /// Load Settings
     /// FR
     nx::kit::utils::fromString(settingValue(kAirafaceEnableFacialRecognitionSetting), &enableFacialRecognition);
