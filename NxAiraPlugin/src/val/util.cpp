@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <algorithm>
+#include "spdlog/sinks/basic_file_sink.h"
 
 #define DEFAULT_LOG_LEVEL spdlog::level::info
 
@@ -14,7 +15,8 @@ std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const std::
     return CreateLogger(tag, GetLogLevel(logLevel));
 }
 std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const spdlog::level::level_enum& logLevel) {
-    std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt(tag);
+    std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt(tag, "logs/val.log", true);
+    spdlog::flush_every(std::chrono::seconds(1));
     logger->set_level(logLevel);
     return logger;
 }

@@ -128,6 +128,7 @@ target_compile_definitions(nx_sdk PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}) #< 
 
 set(NXAIRA_PLUGIN_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(SPDLOG_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src/lib/spdlog/include)
+set(BASIC_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src/val)
 file(GLOB_RECURSE NXAIRA_PLUGIN_SRC CONFIGURE_DEPENDS
     ${NXAIRA_PLUGIN_SRC_DIR}/*)
 
@@ -136,6 +137,7 @@ target_include_directories(NxAiraPlugin PRIVATE
     ${NXAIRA_PLUGIN_SRC_DIR}
     ${OPENCV_ANALYTICS_PLUGIN_SRC_DIR}
     ${SPDLOG_SRC_DIR}
+    ${BASIC_SRC_DIR}
 )
 set(CMAKE_EXE_LINKER_FLAGS " -static")
 target_link_libraries(NxAiraPlugin

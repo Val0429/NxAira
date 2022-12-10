@@ -8,6 +8,7 @@
 #include <nx/sdk/helpers/settings_response.h>
 
 #include "settings_model.h"
+#include "util.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -268,7 +269,10 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     NX_PRINT << "Account: " << account;
     NX_PRINT << "Password: " << password;
 
-    /// 1) Starting point: Attempt to login when hostname / port / account / password valid
+    auto logger = CreateLogger("Engine", "info");
+    logger->info("123456");
+
+    /// Val 1) Starting point: Attempt to login when hostname / port / account / password valid
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
         server.login(hostname, port, account, password);
         auto res = server.getLicense();
