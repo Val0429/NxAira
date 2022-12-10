@@ -2,7 +2,7 @@
 
 #include "device_agent.h"
 
-#define NX_PRINT_PREFIX (this->logUtils.printPrefix)
+// #define NX_PRINT_PREFIX (this->logUtils.printPrefix)
 // #define NX_DEBUG_ENABLE_OUTPUT true
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
@@ -99,15 +99,15 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
 // bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
 bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {
     bool motion_detected = detectMotion(videoFrame);
-    // NX_PRINT << "has motion?" << videoPacket->timestampUs();
+    NX_PRINT << "has motion?" << videoFrame->timestampUs();
 
-    // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
-    // if (metadata) {
-    //     auto metadataPacket = makePtr<ObjectMetadataPacket>();
-    //     metadataPacket->setTimestampUs(videoPacket->timestampUs());
-    //     metadataPacket->addItem(metadata.get());
-    //     pushMetadataPacket(metadataPacket.releasePtr());
-    // }
+    Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
+    if (metadata) {
+        auto metadataPacket = makePtr<ObjectMetadataPacket>();
+        metadataPacket->setTimestampUs(videoFrame->timestampUs());
+        metadataPacket->addItem(metadata.get());
+        pushMetadataPacket(metadataPacket.releasePtr());
+    }
 
     return true; // no errors
 }

@@ -345,10 +345,10 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
 
         } while(0);
 
-// #ifdef DEBUG
-//         CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 2;
-//         res = info;
-// #endif
+#ifdef DEBUG
+        CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 2;
+        res = info;
+#endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
         if (res.isOk()) licenseHolder.onNext(res);
         return res;

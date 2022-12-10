@@ -54,7 +54,8 @@ void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDevice
 static std::string buildCapabilities() {
     std::vector<std::string> capabilities;
 
-    capabilities.push_back("needUncompressedVideoFrames_bgr");
+    // capabilities.push_back("needUncompressedVideoFrames_bgr");
+    capabilities.push_back("needUncompressedVideoFrames_yuv420");
     if (ini().deviceDependent) capabilities.push_back("deviceDependent");
     if (ini().usePluginAsSettingsOrigin) capabilities.push_back("usePluginAsSettingsOrigin");
 
@@ -63,20 +64,6 @@ static std::string buildCapabilities() {
         std::ostream_iterator<std::string>(join, "|"));
     
     return join.str();
-
-    // std::string capabilities = "needUncompressedVideoFrames_yuv420";
-
-    // if (ini().deviceDependent)
-    //     capabilities += "|deviceDependent";
-
-    // if (ini().usePluginAsSettingsOrigin)
-    //     capabilities += "|usePluginAsSettingsOrigin";
-
-    // // Delete first '|', if any.
-    // if (!capabilities.empty() && capabilities.at(0) == '|')
-    //     capabilities.erase(0, 1);
-
-    // return capabilities;
 }
 
 /**
@@ -100,18 +87,6 @@ std::string Engine::manifestString() const {
 std::string Engine::getManifestModel() const {
     auto licenseInfo = server.licenseHolder.getValue();
     bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
-
-                    // {
-                    //     "type": "RadioButtonGroup",
-                    //     "name": "LicenseID",
-                    //     "caption": "License ID",
-                    //     "description": "",
-                    //     "defaultValue": "opt1",
-                    //     "range": ["opt1"],
-                    //     "itemCaptions": {
-                    //         "opt1": ")json" + (isNull ? "No License" : licenseInfo->value().license) + R"json("
-                    //     }
-                    // },
 
     return /*suppress newline*/ 1 + (const char*) R"json(
     {
@@ -297,7 +272,7 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
         server.login(hostname, port, account, password);
         auto res = server.getLicense();
-        //NX_PRINT << "hello!" << res.get();
+        NX_PRINT << "hello!" << res.get();
     }
 
 

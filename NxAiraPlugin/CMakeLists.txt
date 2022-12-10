@@ -1,6 +1,7 @@
 ## Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
 
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.15)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 project(NxAiraPlugin)
 
 set(metadataSdkDir "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk" CACHE PATH "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk")
@@ -13,6 +14,11 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+set(MSVC_DISABLED_WARNINGS_LIST
+    "C4566"
+    "C4819"
+)
 
 # Download OpenCV automatically using Conan
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
@@ -121,13 +127,24 @@ target_compile_definitions(nx_sdk PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}) #< 
 # Define NxAiraPlugin lib, dynamic, depends on nx_kit and nx_sdk.
 
 set(NXAIRA_PLUGIN_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+set(SPDLOG_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src/lib/spdlog/include)
 file(GLOB_RECURSE NXAIRA_PLUGIN_SRC CONFIGURE_DEPENDS
     ${NXAIRA_PLUGIN_SRC_DIR}/*)
 
 add_library(NxAiraPlugin SHARED ${NXAIRA_PLUGIN_SRC})
-target_include_directories(NxAiraPlugin PRIVATE ${NXAIRA_PLUGIN_SRC_DIR})
-target_link_libraries(NxAiraPlugin PRIVATE nx_kit nx_sdk)
-
+target_include_directories(NxAiraPlugin PRIVATE
+    ${NXAIRA_PLUGIN_SRC_DIR}
+    ${OPENCV_ANALYTICS_PLUGIN_SRC_DIR}
+    ${SPDLOG_SRC_DIR}
+)
+set(CMAKE_EXE_LINKER_FLAGS " -static")
+target_link_libraries(NxAiraPlugin
+    nx_kit
+    nx_sdk
+    opencv::core opencv::flann opencv::imgproc opencv::imgcodecs opencv::dnn opencv::opencv_dnn opencv::ml 
+    opencv::plot opencv::opencv_features2d opencv::opencv_calib3d opencv::datasets opencv::video opencv::tracking
+)
+target_compile_options(NxAiraPlugin PRIVATE -wd4566 -wd4819)
 target_compile_definitions(NxAiraPlugin
     PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}
 )
