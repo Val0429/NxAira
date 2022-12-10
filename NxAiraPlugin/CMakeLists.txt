@@ -11,6 +11,65 @@ if(metadataSdkDir STREQUAL "")
     endif()
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+# Download OpenCV automatically using Conan
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+       "${CMAKE_BINARY_DIR}/conan.cmake")
+endif()
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+if(WIN32)
+    set(CONAN_VS_RUNTIME_MT_SETTING "compiler.runtime=MT")
+endif()
+set(OPENCV_OPTIONS
+    opencv:parallel=False
+    opencv:contrib=True
+    opencv:contrib_freetype=False
+    opencv:contrib_sfm=False
+    opencv:with_jpeg=False 
+    opencv:with_png=False
+    opencv:with_tiff=False
+    opencv:with_jpeg2000=False
+    opencv:with_openexr=False
+    opencv:with_eigen=False
+    opencv:with_webp=False
+    opencv:with_quirc=False
+    opencv:with_cuda=False
+    opencv:with_cublas=False
+    opencv:dnn=True
+    opencv:with_ffmpeg=False
+)
+
+if(UNIX)
+    set(OPENCV_OPTIONS 
+        ${OPENCV_OPTIONS}
+        opencv:fPIC=True
+        opencv:with_gtk=False
+        opencv:with_cufft=False
+        opencv:with_v4l=False
+    )
+endif()
+
+conan_cmake_run(BUILD_TYPE "Release")
+conan_cmake_configure(REQUIRES opencv/4.5.5
+    GENERATORS cmake_find_package
+    OPTIONS ${OPENCV_OPTIONS}
+    SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
+)
+
+conan_cmake_install(PATH_OR_REFERENCE .
+    OPTIONS ${OPENCV_OPTIONS}
+    SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
+    BUILD missing
+)
+
+find_package(OpenCV REQUIRED)
+
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

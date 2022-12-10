@@ -33,8 +33,11 @@ protected:
     virtual nx::sdk::Result<const nx::sdk::ISettingsResponse*> settingsReceived() override;
     virtual void getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const override;
 
-    virtual bool pushCompressedVideoFrame(
-        const nx::sdk::analytics::ICompressedVideoPacket* videoFrame) override;
+    // virtual bool pushCompressedVideoFrame(
+    //     const nx::sdk::analytics::ICompressedVideoPacket* videoFrame) override;
+
+    virtual bool pushUncompressedVideoFrame(
+        const nx::sdk::analytics::IUncompressedVideoFrame* videoFrame) override;
 
     virtual bool pullMetadataPackets(
         std::vector<nx::sdk::analytics::IMetadataPacket*>* metadataPackets) override;
@@ -44,7 +47,7 @@ protected:
         const nx::sdk::analytics::IMetadataTypes* neededMetadataTypes) override;
 
 private:
-    bool detectMotion(const nx::sdk::analytics::ICompressedVideoPacket* videoPacket);
+    bool detectMotion(const nx::sdk::analytics::IUncompressedVideoFrame* videoPacket);
 
 private:
     bool enableFacialRecognition;

@@ -54,6 +54,7 @@ void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDevice
 static std::string buildCapabilities() {
     std::vector<std::string> capabilities;
 
+    capabilities.push_back("needUncompressedVideoFrames_bgr");
     if (ini().deviceDependent) capabilities.push_back("deviceDependent");
     if (ini().usePluginAsSettingsOrigin) capabilities.push_back("usePluginAsSettingsOrigin");
 

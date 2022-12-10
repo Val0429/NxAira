@@ -96,17 +96,18 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
     *outResult = settingsResponse;
 }
 
-bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
-    bool motion_detected = detectMotion(videoPacket);
+// bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
+bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {
+    bool motion_detected = detectMotion(videoFrame);
     // NX_PRINT << "has motion?" << videoPacket->timestampUs();
 
-    Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
-    if (metadata) {
-        auto metadataPacket = makePtr<ObjectMetadataPacket>();
-        metadataPacket->setTimestampUs(videoPacket->timestampUs());
-        metadataPacket->addItem(metadata.get());
-        pushMetadataPacket(metadataPacket.releasePtr());
-    }
+    // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
+    // if (metadata) {
+    //     auto metadataPacket = makePtr<ObjectMetadataPacket>();
+    //     metadataPacket->setTimestampUs(videoPacket->timestampUs());
+    //     metadataPacket->addItem(metadata.get());
+    //     pushMetadataPacket(metadataPacket.releasePtr());
+    // }
 
     return true; // no errors
 }
@@ -122,7 +123,7 @@ void DeviceAgent::doSetNeededMetadataTypes(
 }
 
 /// Private Helpers
-bool DeviceAgent::detectMotion(const ICompressedVideoPacket* videoPacket) {
+bool DeviceAgent::detectMotion(const IUncompressedVideoFrame* videoPacket) {
     Ptr<IList<IMetadataPacket>> metadataPacketList = videoPacket->metadataList();
     if (!metadataPacketList) return false;
 
