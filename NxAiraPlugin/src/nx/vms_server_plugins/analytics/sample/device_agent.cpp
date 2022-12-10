@@ -55,42 +55,38 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
 
     /// Load Settings
-    // bool enableFacialRecognition = toBool(settingValue(kAirafaceEnableFacialRecognitionSetting));
-    bool enableFacialRecognition;
+    /// FR
     nx::kit::utils::fromString(settingValue(kAirafaceEnableFacialRecognitionSetting), &enableFacialRecognition);
-    double frMinimumFaceSize;
     nx::kit::utils::fromString(settingValue(kAirafaceFRMinimumFaceSizeSetting), &frMinimumFaceSize);
-    double frRecognitionScore;
     nx::kit::utils::fromString(settingValue(kAirafaceFRRecognitionScoreSetting), &frRecognitionScore);
-    double frFPS;
     nx::kit::utils::fromString(settingValue(kAirafaceFRRecognitionFPSSetting), &frFPS);
-
-    bool frEventWatchlist;
+    /// FR - Events
     nx::kit::utils::fromString(settingValue(kAirafaceFREventWatchlistSetting), &frEventWatchlist);
-    bool frEventRegistered;
-    bool frEventVisitor;
-    bool frEventStranger;
+    nx::kit::utils::fromString(settingValue(kAirafaceFREventRegisteredSetting), &frEventRegistered);
+    nx::kit::utils::fromString(settingValue(kAirafaceFREventVisitorSetting), &frEventVisitor);
+    nx::kit::utils::fromString(settingValue(kAirafaceFREventStrangerSetting), &frEventStranger);
+    /// PD
+    nx::kit::utils::fromString(settingValue(kAirafaceEnablePersonDetectionSetting), &enablePersonDetection);
+    nx::kit::utils::fromString(settingValue(kAirafacePDMinimumBodySizeSetting), &pdMinimumBodySize);
+    nx::kit::utils::fromString(settingValue(kAirafacePDDetectionScoreSetting), &pdDetectionScore);
+    nx::kit::utils::fromString(settingValue(kAirafacePDRecognitionFPSSetting), &pdRecognitionFPS);
+    /// PD - Events
+    nx::kit::utils::fromString(settingValue(kAirafacePDEventPersonDetectionSetting), &pdEventPersonDetection);
 
-
-    NX_PRINT << "enable?" << enableFacialRecognition;
-
-// static const std::string kAirafaceEnableFacialRecognitionSetting = SET_PARSE+"EnableFacialRecognition";
-// static const std::string kAirafaceFRMinimumFaceSizeSetting = SET_PARSE+"MinimumFaceSize";
-// static const std::string kAirafaceFRRecognitionScoreSetting = SET_PARSE+"FRRecognitionScore";
-// static const std::string kAirafaceFRRecognitionFPSSetting = SET_PARSE+"FRRecognitionFPS";
-// /// FR - event
-// static const std::string kAirafaceFREventWatchlistSetting = SET_PARSE+"FREventWatchlist";
-// static const std::string kAirafaceFREventRegisteredSetting = SET_PARSE+"FREventRegistered";
-// static const std::string kAirafaceFREventVisitorSetting = SET_PARSE+"FREventVisitor";
-// static const std::string kAirafaceFREventStrangerSetting = SET_PARSE+"FREventStranger";
-// /// PD
-// static const std::string kAirafaceEnablePersonDetectionSetting = SET_PARSE+"EnablePersonDetection";
-// static const std::string kAirafacePDMinimumBodySizeSetting = SET_PARSE+"PDMinimumBodySize";
-// static const std::string kAirafacePDDetectionScoreSetting = SET_PARSE+"PDDetectionScore";
-// static const std::string kAirafacePDRecognitionFPSSetting = SET_PARSE+"PDRecognitionFPS";
-// /// PD - event
-// static const std::string kAirafacePDEventPersonDetectionSetting = SET_PARSE+"PDEventPersonDetection";
-    
+    /// Report
+    NX_PRINT << "enable FR?" << enableFacialRecognition;
+    NX_PRINT << "FR minimum face size?" << frMinimumFaceSize;
+    NX_PRINT << "FR recognition score?" << frRecognitionScore;
+    NX_PRINT << "FR recognition fps?" << frFPS;
+    NX_PRINT << "FR Event watchlist?" << frEventWatchlist;
+    NX_PRINT << "FR Event registered?" << frEventRegistered;
+    NX_PRINT << "FR Event visitor?" << frEventVisitor;
+    NX_PRINT << "FR Event stranger?" << frEventStranger;
+    NX_PRINT << "enable PD?" << enablePersonDetection;
+    NX_PRINT << "PD minimum body size?" << pdMinimumBodySize;
+    NX_PRINT << "PD detection score?" << pdDetectionScore;
+    NX_PRINT << "PD recognition fps?" << pdRecognitionFPS;
+    NX_PRINT << "PD Event detection?" << pdEventPersonDetection;
 
     const auto settingsResponse = new nx::sdk::SettingsResponse();
     settingsResponse->setModel(engine.getManifestModel());

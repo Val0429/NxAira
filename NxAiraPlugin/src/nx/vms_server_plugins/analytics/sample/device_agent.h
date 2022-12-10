@@ -47,6 +47,21 @@ private:
     bool detectMotion(const nx::sdk::analytics::ICompressedVideoPacket* videoPacket);
 
 private:
+    bool enableFacialRecognition;
+    double frMinimumFaceSize;
+    double frRecognitionScore;
+    double frFPS;
+    bool frEventWatchlist;
+    bool frEventRegistered;
+    bool frEventVisitor;
+    bool frEventStranger;
+    bool enablePersonDetection;
+    double pdMinimumBodySize;
+    double pdDetectionScore;
+    double pdRecognitionFPS;
+    bool pdEventPersonDetection;
+
+private:
     DeviceAgentMotionFaceProvider motionProvider;
 };
 

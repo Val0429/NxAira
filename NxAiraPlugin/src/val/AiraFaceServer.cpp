@@ -68,7 +68,6 @@ R"json(
                 }, std::chrono::milliseconds(1000));
 
                 jsonString = std::string {response.body.begin(), response.body.end()};
-                NX_DEBUG_STREAM << "Got the json string?" << jsonString NX_DEBUG_ENDL;
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
                 std::string message = json["message"].string_value();
                 if (message != "ok") {
