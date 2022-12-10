@@ -19,7 +19,25 @@ static const std::string kAirafaceAccountSetting = SET_PARSE+"Account";
 static const std::string kAirafacePasswordSetting = SET_PARSE+"Password";
 
 static const std::string kAirafaceLicenseSetting = SET_PARSE+"License";
+
 /// settings - engine
+/// FR
+static const std::string kAirafaceEnableFacialRecognitionSetting = SET_PARSE+"EnableFacialRecognition";
+static const std::string kAirafaceFRMinimumFaceSizeSetting = SET_PARSE+"MinimumFaceSize";
+static const std::string kAirafaceFRRecognitionScoreSetting = SET_PARSE+"FRRecognitionScore";
+static const std::string kAirafaceFRRecognitionFPSSetting = SET_PARSE+"FRRecognitionFPS";
+/// FR - event
+static const std::string kAirafaceFREventWatchlistSetting = SET_PARSE+"FREventWatchlist";
+static const std::string kAirafaceFREventRegisteredSetting = SET_PARSE+"FREventRegistered";
+static const std::string kAirafaceFREventVisitorSetting = SET_PARSE+"FREventVisitor";
+static const std::string kAirafaceFREventStrangerSetting = SET_PARSE+"FREventStranger";
+/// PD
+static const std::string kAirafaceEnablePersonDetectionSetting = SET_PARSE+"EnablePersonDetection";
+static const std::string kAirafacePDMinimumBodySizeSetting = SET_PARSE+"PDMinimumBodySize";
+static const std::string kAirafacePDDetectionScoreSetting = SET_PARSE+"PDDetectionScore";
+static const std::string kAirafacePDRecognitionFPSSetting = SET_PARSE+"PDRecognitionFPS";
+/// PD - event
+static const std::string kAirafacePDEventPersonDetectionSetting = SET_PARSE+"PDEventPersonDetection";
 
 
 /// models

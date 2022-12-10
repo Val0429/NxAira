@@ -62,10 +62,13 @@ R"json(
 }
 )json"
                 , {
-                    {"Content-Type", "application/json"}
+                    {"Content-Type", "application/json"},
+                    /// Val: todo remove
+                    {"token", "83522758"}
                 }, std::chrono::milliseconds(1000));
 
                 jsonString = std::string {response.body.begin(), response.body.end()};
+                NX_DEBUG_STREAM << "Got the json string?" << jsonString NX_DEBUG_ENDL;
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
                 std::string message = json["message"].string_value();
                 if (message != "ok") {
@@ -83,7 +86,7 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::LoginSuccess : EventCode::LoginFailed, res);
-        if (res.isOk()) tokenHolder.onNext(res.value());
+        tokenHolder.onNext(res);
         return res;
 
     });
@@ -200,37 +203,54 @@ decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::maintain() {
 }
 
 void AiraFaceServer::maintain_handler() {
-// #ifdef DEBUG
-// NX_DEBUG_STREAM << "a000000000000000000000" NX_DEBUG_ENDL;
-// #endif
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     try {
         while (true) {
             auto token = tokenHolder.getFuture();
-// #ifdef DEBUG
-// NX_DEBUG_STREAM << "a1111111111111111111111" NX_DEBUG_ENDL;
-// #endif
+
+            // /// login failed because of network error
+            // if (token != nullptr) {
+            //     auto status = token->wait_for(std::chrono::milliseconds(0));
+            //     if (status == std::future_status::ready && !token->get().isOk()) {
+            //         auto token_result = token->get();
+            //         if (token_result.error().errorCode() == val::ErrorCode::networkError) {
+            //             NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
+            //             this->login(true);
+            //             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            //             continue;
+            //         }
+            //         /// 2nd case, wait for login
+            //         NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+            //         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            //         continue;
+            //     }
+            // }
+
             /// login failed because of network error
-            if (token != nullptr) {
+            if (token == nullptr) {
+                /// 2nd case, wait for login
+                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                continue;
+            } else {
                 auto status = token->wait_for(std::chrono::milliseconds(0));
-                if (status == std::future_status::ready && !token->get().isOk()) {
+                if (status == std::future_status::ready) {
                     auto token_result = token->get();
-                    if (token_result.error().errorCode() == val::ErrorCode::networkError) {
-                        NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
-                        this->login(true);
-                        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                    if (!token_result.isOk()) {
+                        if (token_result.error().errorCode() == val::ErrorCode::networkError) {
+                            NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
+                            this->login(true);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                        } else {
+                            /// 2nd case, wait for login
+                            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        }
                         continue;
                     }
-                    /// 2nd case, wait for login
-                    NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                    continue;
                 }
             }
-// #ifdef DEBUG
-// NX_DEBUG_STREAM << "a222222222222222222222222" NX_DEBUG_ENDL;
-// #endif
 
             auto res = this->maintain();
             auto mtoken = res->get();
@@ -284,9 +304,10 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
 
             /// actual request
             try {
-                const std::string finalUrl = url + "?token=" + token.value();
+                //const std::string finalUrl = url + "?token=" + token.value();
+                const std::string finalUrl = url;
                 http::Request request {finalUrl};
-                const auto response = request.send("GET",
+                const auto response = request.send("POST",
                     "",
                     {
                         {"Content-Type", "application/json"},
@@ -294,28 +315,28 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
                     },
                     std::chrono::milliseconds(1000));
 
-                // const auto response = request.send("GET",
-                //     std::string("?token=") + token,
-                //     {
-                //         {"Content-Type", "application/json"},
-                //         {"token", token}
-                //     },
-                //     std::chrono::milliseconds(1000));
-
                 jsonString = std::string {response.body.begin(), response.body.end()};
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
-                std::string message = json["message"].string_value();
-                if (message != "ok") {
-                    res = val::error(val::ErrorCode::otherError, message);
-                    break;
-                }
-                NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << msg_success NX_DEBUG_ENDL;
+
+                NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << msg_success << jsonString NX_DEBUG_ENDL;
                 CLicenseInfo info;
-                auto jlicense = json["license"];
-                info.license = jlicense["license"].string_value();
-                info.count = jlicense["fcs_amount"].int_value();
+                info.license = "";
+                info.count = json["channel_amount"].int_value();
                 res = std::move(info);
                 break;
+
+                // std::string message = json["message"].string_value();
+                // if (message != "ok") {
+                //     res = val::error(val::ErrorCode::otherError, message);
+                //     break;
+                // }
+                // NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << msg_success NX_DEBUG_ENDL;
+                // CLicenseInfo info;
+                // auto jlicense = json["license"];
+                // info.license = jlicense["license"].string_value();
+                // info.count = jlicense["fcs_amount"].int_value();
+                // res = std::move(info);
+                // break;
 
             } catch(const std::exception& ex) {
                 res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
@@ -325,14 +346,12 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
 
         } while(0);
 
-#ifdef DEBUG
-        CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 2;
-        res = info;
-#endif
+// #ifdef DEBUG
+//         CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 2;
+//         res = info;
+// #endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
-        if (res.isOk()) {
-            licenseHolder.onNext(res.value());
-        }
+        if (res.isOk()) licenseHolder.onNext(res);
         return res;
     });
     
@@ -407,7 +426,7 @@ R"json(
 
         } while(0);
         pushEvent(res.isOk() ? EventCode::SetLicenseSuccess : EventCode::SetLicenseFailed, res);
-        if (res.isOk()) licenseHolder.onNext(res.value());
+        if (res.isOk()) licenseHolder.onNext(res);
         return res;
     });
     
@@ -419,7 +438,7 @@ std::string AiraFaceServer::baseUrl(std::string uri) {
     std::ostringstream strm;
     strm << PROTOCOL << "://";
     strm << this->hostname << ":" << this->port;
-    strm << "/airafacelite" << uri;
+    strm << "/airaai" << uri;
     return strm.str();
 }
 

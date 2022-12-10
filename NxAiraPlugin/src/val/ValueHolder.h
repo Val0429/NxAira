@@ -44,17 +44,17 @@ public:
 
 /// subject
 private:
-    rxcpp::subjects::behavior<std::shared_ptr<Message>> subject;
+    rxcpp::subjects::behavior<std::shared_ptr<MessageType>> subject;
 public:
-    void onNext(Message o) {
+    void onNext(MessageType o) {
         subject.get_subscriber().on_next(
-            std::make_shared<Message>(std::move(o))
+            std::make_shared<MessageType>(std::move(o))
             );
     }
-    rxcpp::observable<std::shared_ptr<Message>> getObservable() {
+    rxcpp::observable<std::shared_ptr<MessageType>> getObservable() {
         return subject.get_observable();
     }
-    std::shared_ptr<Message> getValue() const {
+    std::shared_ptr<MessageType> getValue() const {
         return subject.get_value();
     }
 };
