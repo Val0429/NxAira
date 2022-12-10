@@ -39,6 +39,7 @@ static const std::string kAirafacePDRecognitionFPSSetting = SET_PARSE+"PDRecogni
 /// PD - event
 static const std::string kAirafacePDEventPersonDetectionSetting = SET_PARSE+"PDEventPersonDetection";
 
+
 /// models
 // static const std::string kPluginBasicSettingsModel = /*suppress newline*/ 1 + (const char*) R"json(
 // {
