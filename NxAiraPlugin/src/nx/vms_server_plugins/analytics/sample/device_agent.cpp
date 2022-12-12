@@ -97,19 +97,36 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
 }
 
 // bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
+//     return true;
+// }
+
+bool first = true;
 bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {
     bool motion_detected = detectMotion(videoFrame);
 
-    this->logger->info(__func__);
-    this->logger->info("has motion? {}", videoFrame->timestampUs());
+    if (motion_detected && first) {
+        first = false;
+        /// 1) take out picture
+        Frame frame(videoFrame);
 
-    Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
-    if (metadata) {
-        auto metadataPacket = makePtr<ObjectMetadataPacket>();
-        metadataPacket->setTimestampUs(videoFrame->timestampUs());
-        metadataPacket->addItem(metadata.get());
-        pushMetadataPacket(metadataPacket.releasePtr());
+        /// 2) base64 image
+        std::string base64_string = frame.getBase64String();
+        logger->info("encode! {}", base64_string);
+
+        /// 3) base64 image
+        /// 4) send to server
     }
+
+    // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
+    // if (metadata) {
+    //     this->logger->info(__func__);
+    //     this->logger->info("has motion? {}", videoFrame->timestampUs());
+
+    //     auto metadataPacket = makePtr<ObjectMetadataPacket>();
+    //     metadataPacket->setTimestampUs(videoFrame->timestampUs());
+    //     metadataPacket->addItem(metadata.get());
+    //     pushMetadataPacket(metadataPacket.releasePtr());
+    // }
 
     return true; // no errors
 }

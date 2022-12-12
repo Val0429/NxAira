@@ -56,8 +56,8 @@ void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDevice
 static std::string buildCapabilities() {
     std::vector<std::string> capabilities;
 
-    // capabilities.push_back("needUncompressedVideoFrames_bgr");
-    capabilities.push_back("needUncompressedVideoFrames_yuv420");
+    capabilities.push_back("needUncompressedVideoFrames_bgr");
+    //capabilities.push_back("needUncompressedVideoFrames_yuv420");
     if (ini().deviceDependent) capabilities.push_back("deviceDependent");
     if (ini().usePluginAsSettingsOrigin) capabilities.push_back("usePluginAsSettingsOrigin");
 
@@ -78,7 +78,7 @@ std::string Engine::manifestString() const {
 {
     "version": "1.0.0",
     "vendor": "Aira Corporation",
-    "streamTypeFilter": "motion|compressedVideo",
+    "streamTypeFilter": "motion|uncompressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
 )json" + getManifestModel() + R"json(

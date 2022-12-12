@@ -36,13 +36,13 @@ set(OPENCV_OPTIONS
     opencv:contrib=True
     opencv:contrib_freetype=False
     opencv:contrib_sfm=False
-    opencv:with_jpeg=False 
-    opencv:with_png=False
+    opencv:with_jpeg=libjpeg-turbo 
+    opencv:with_png=True
     opencv:with_tiff=False
-    opencv:with_jpeg2000=False
+    opencv:with_jpeg2000=openjpeg
     opencv:with_openexr=False
     opencv:with_eigen=False
-    opencv:with_webp=False
+    opencv:with_webp=True
     opencv:with_quirc=False
     opencv:with_cuda=False
     opencv:with_cublas=False
@@ -59,22 +59,30 @@ if(UNIX)
         opencv:with_v4l=False
     )
 endif()
-
 conan_cmake_run(BUILD_TYPE "Release")
+
+# OpenCV
 conan_cmake_configure(REQUIRES opencv/4.5.5
     GENERATORS cmake_find_package
     OPTIONS ${OPENCV_OPTIONS}
     SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
 )
-
+# Boost
+conan_cmake_configure(REQUIRES boost/1.70.0
+    GENERATORS cmake_find_package
+)
+# libBase64
+conan_cmake_configure(REQUIRES base64/0.5.0
+    GENERATORS cmake_find_package
+)
 conan_cmake_install(PATH_OR_REFERENCE .
     OPTIONS ${OPENCV_OPTIONS}
     SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
     BUILD missing
 )
-
 find_package(OpenCV REQUIRED)
-
+find_package(Boost REQUIRED)
+find_package(Base64 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -101,6 +109,10 @@ if(WIN32)
     set(API_EXPORT_MACRO "__declspec(dllexport)")
 else()
     set(API_EXPORT_MACRO "__attribute__((visibility(\"default\")))")
+endif()
+
+if (WIN32)
+    add_definitions(-D_WIN32_WINNT=0x0A00)
 endif()
 
 #--------------------------------------------------------------------------------------------------
@@ -135,7 +147,7 @@ file(GLOB_RECURSE NXAIRA_PLUGIN_SRC CONFIGURE_DEPENDS
 add_library(NxAiraPlugin SHARED ${NXAIRA_PLUGIN_SRC})
 target_include_directories(NxAiraPlugin PRIVATE
     ${NXAIRA_PLUGIN_SRC_DIR}
-    ${OPENCV_ANALYTICS_PLUGIN_SRC_DIR}
+    # ${OPENCV_ANALYTICS_PLUGIN_SRC_DIR}
     ${SPDLOG_SRC_DIR}
     ${BASIC_SRC_DIR}
 )
@@ -145,6 +157,8 @@ target_link_libraries(NxAiraPlugin
     nx_sdk
     opencv::core opencv::flann opencv::imgproc opencv::imgcodecs opencv::dnn opencv::opencv_dnn opencv::ml 
     opencv::plot opencv::opencv_features2d opencv::opencv_calib3d opencv::datasets opencv::video opencv::tracking
+    Boost::boost
+    base64::base64
 )
 target_compile_options(NxAiraPlugin PRIVATE -wd4566 -wd4819)
 target_compile_definitions(NxAiraPlugin
