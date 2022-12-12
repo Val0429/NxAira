@@ -1,4 +1,6 @@
 #pragma once
+#ifndef INI_H
+#define INI_H
 
 #include <nx/kit/ini_config.h>
 #include <nx/sdk/analytics/helpers/pixel_format.h>
@@ -31,3 +33,5 @@ Ini& ini();
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

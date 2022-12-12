@@ -6,9 +6,9 @@
 
 #include <nx/kit/debug.h>
 #include <nx/sdk/helpers/settings_response.h>
+#include "spdlog/spdlog.h"
 
 #include "settings_model.h"
-#include "util.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -22,7 +22,8 @@ Engine::Engine():
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
     nx::sdk::analytics::Engine(/*enableOutput*/ true),
     licenseUsed(0),
-    server(*this)
+    server(*this),
+    logger(CreateLogger("Engine"))
 {
     // server.licenseHolder.getObservable().subscribe([this](auto o) {
     //     pushManifest(manifestString());
@@ -257,20 +258,17 @@ std::string Engine::getManifestModel() const {
 }
 
 Result<const ISettingsResponse*> Engine::settingsReceived() {
-    NX_PRINT << "Handle Plugin Setting...";
+    this->logger->info("Handle Plugin Setting...");
 
     const std::string hostname = settingValue(kAirafaceHostSetting);
     const std::string port = settingValue(kAirafacePortSetting);
     const std::string account = settingValue(kAirafaceAccountSetting);
     const std::string password = settingValue(kAirafacePasswordSetting);
 
-    NX_PRINT << "Host: " << hostname;
-    NX_PRINT << "Port: " << port;
-    NX_PRINT << "Account: " << account;
-    NX_PRINT << "Password: " << password;
-
-    auto logger = CreateLogger("Engine", "info");
-    logger->info("123456");
+    this->logger->info("Host: {}", hostname);
+    this->logger->info("Port: {}", port);
+    this->logger->info("Account: {}", account);
+    this->logger->info("Password: {}", password);
 
     /// Val 1) Starting point: Attempt to login when hostname / port / account / password valid
     if (hostname.size() > 0 && account.size() > 0 && password.size() > 0) {
@@ -279,18 +277,8 @@ Result<const ISettingsResponse*> Engine::settingsReceived() {
         NX_PRINT << "hello!" << res.get();
     }
 
-
-    //settingValue() / m_settings
-
-    // NX_PRINT << "Sent request!";
     // auto response = server.login("211.75.111.228", "82", "Admin", "123456");
     // auto res_maintain = server.maintain();
-    // NX_PRINT << "request end!" << res_maintain.get();
-
-    // Val: Todo connect AiraFace
-    // settings[kAirafaceAccountSetting];
-    // Convert Type
-    // nx::kit::utils::fromString(settings[kObjectCountSetting], &objectCount);
 
     return nullptr;
 }

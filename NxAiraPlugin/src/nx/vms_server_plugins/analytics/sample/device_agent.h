@@ -1,13 +1,15 @@
-// Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
-
 #pragma once
+#ifndef DEVICE_AGENT_H
+#define DEVICE_AGENT_H
 
 #include <set>
 #include <thread>
+#include <memory>
 
 #include <nx/sdk/analytics/helpers/consuming_device_agent.h>
 #include <nx/sdk/helpers/uuid_helper.h>
 
+#include "util.h"
 #include "engine.h"
 #include "DeviceAgentHelper/device_agent_motion_face_provider.h"
 #include "DeviceAgentHelper/frame.h"
@@ -65,6 +67,7 @@ private:
     bool pdEventPersonDetection;
 
 private:
+    std::shared_ptr<spdlog::logger> logger;
     DeviceAgentMotionFaceProvider motionProvider;
 };
 
@@ -72,3 +75,5 @@ private:
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

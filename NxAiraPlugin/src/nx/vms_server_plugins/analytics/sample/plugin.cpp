@@ -4,6 +4,7 @@
 
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
+#include "spdlog/spdlog.h"
 
 #include "engine.h"
 #include "settings_model.h"

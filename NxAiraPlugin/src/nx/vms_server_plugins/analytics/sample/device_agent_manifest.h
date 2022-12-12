@@ -1,6 +1,6 @@
-// Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
-
 #pragma once
+#ifndef DEVICE_AGENT_MANIFEST_H
+#define DEVICE_AGENT_MANIFEST_H
 
 #include <string>
 
@@ -101,3 +101,5 @@ const std::vector<std::vector<std::string>> kObjectAttributes = {
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

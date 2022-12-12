@@ -1,4 +1,6 @@
 #pragma once
+#ifndef RESULT_H
+#define RESULT_H
 
 #include <iostream>
 
@@ -98,3 +100,5 @@ private:
 val::Error error(val::ErrorCode errorCode, std::string errorMessage);
 
 }
+
+#endif

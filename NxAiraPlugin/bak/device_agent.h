@@ -1,6 +1,7 @@
-// Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
-
 #pragma once
+
+#ifndef DEVICE_AGENT_H
+#define DEVICE_AGENT_H
 
 #include <set>
 #include <thread>
@@ -72,3 +73,5 @@ private:
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

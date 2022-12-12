@@ -2,10 +2,9 @@
 
 #include "device_agent.h"
 
-// #define NX_PRINT_PREFIX (this->logUtils.printPrefix)
-// #define NX_DEBUG_ENABLE_OUTPUT true
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
+#include "spdlog/spdlog.h"
 
 #include <chrono>
 
@@ -20,7 +19,6 @@
 #include "device_agent_manifest.h"
 
 #include "settings_model.h"
-#include "./../../../../val/util.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -35,6 +33,7 @@ DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
     engine(engine),
     doUnref(std::move(doUnref)),
+    logger(CreateLogger("DeviceAgent")),
     motionProvider(*this)
     {}
 
@@ -69,19 +68,20 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     nx::kit::utils::fromString(settingValue(kAirafacePDEventPersonDetectionSetting), &pdEventPersonDetection);
 
     /// Report
-    NX_PRINT << "enable FR?" << enableFacialRecognition;
-    NX_PRINT << "FR minimum face size?" << frMinimumFaceSize;
-    NX_PRINT << "FR recognition score?" << frRecognitionScore;
-    NX_PRINT << "FR recognition fps?" << frFPS;
-    NX_PRINT << "FR Event watchlist?" << frEventWatchlist;
-    NX_PRINT << "FR Event registered?" << frEventRegistered;
-    NX_PRINT << "FR Event visitor?" << frEventVisitor;
-    NX_PRINT << "FR Event stranger?" << frEventStranger;
-    NX_PRINT << "enable PD?" << enablePersonDetection;
-    NX_PRINT << "PD minimum body size?" << pdMinimumBodySize;
-    NX_PRINT << "PD detection score?" << pdDetectionScore;
-    NX_PRINT << "PD recognition fps?" << pdRecognitionFPS;
-    NX_PRINT << "PD Event detection?" << pdEventPersonDetection;
+    this->logger->info(__func__);
+    this->logger->info("enable FR? {}", enableFacialRecognition);
+    this->logger->info("FR minimum face size? {}", frMinimumFaceSize);
+    this->logger->info("FR recognition score? {}", frRecognitionScore);
+    this->logger->info("FR recognition fps? {}", frFPS);
+    this->logger->info("FR Event watchlist? {}", frEventWatchlist);
+    this->logger->info("FR Event registered? {}", frEventRegistered);
+    this->logger->info("FR Event visitor? {}", frEventVisitor);
+    this->logger->info("FR Event stranger? {}", frEventStranger);
+    this->logger->info("enable PD? {}", enablePersonDetection);
+    this->logger->info("PD minimum body size? {}", pdMinimumBodySize);
+    this->logger->info("PD detection score? {}", pdDetectionScore);
+    this->logger->info("PD recognition fps? {}", pdRecognitionFPS);
+    this->logger->info("PD Event detection? {}", pdEventPersonDetection);
 
     const auto settingsResponse = new nx::sdk::SettingsResponse();
     settingsResponse->setModel(engine.getManifestModel());
@@ -99,7 +99,9 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
 // bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPacket) {
 bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {
     bool motion_detected = detectMotion(videoFrame);
-    NX_PRINT << "has motion?" << videoFrame->timestampUs();
+
+    this->logger->info(__func__);
+    this->logger->info("has motion? {}", videoFrame->timestampUs());
 
     Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
     if (metadata) {

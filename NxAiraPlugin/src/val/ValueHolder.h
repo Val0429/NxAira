@@ -1,4 +1,6 @@
 #pragma once
+#ifndef VALUE_HOLDER_H
+#define VALUE_HOLDER_H
 
 #include <future>
 #include <memory>
@@ -60,3 +62,5 @@ public:
 };
 
 }
+
+#endif

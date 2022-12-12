@@ -1,9 +1,10 @@
-// Copyright 2018-present Network Optix, Inc. Licensed under MPL 2.0: www.mozilla.org/MPL/2.0/
-
 #pragma once
+#ifndef PLUGIN_H
+#define PLUGIN_H
 
 #include <nx/sdk/analytics/helpers/plugin.h>
 #include <nx/sdk/analytics/i_engine.h>
+#include "fwd/spdlog.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -25,3 +26,5 @@ protected:
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

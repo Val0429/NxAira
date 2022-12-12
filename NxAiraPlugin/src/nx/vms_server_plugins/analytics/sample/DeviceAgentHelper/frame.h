@@ -1,4 +1,6 @@
 #pragma once
+#ifndef FRAME_H
+#define FRAME_H
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -42,3 +44,5 @@ public:
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

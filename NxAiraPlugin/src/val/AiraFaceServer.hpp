@@ -1,4 +1,6 @@
 #pragma once
+#ifndef AIRAFACESERVER_H
+#define AIRAFACESERVER_H
 
 #include <set>
 #include <thread>
@@ -111,3 +113,5 @@ private:
 };
 
 }
+
+#endif

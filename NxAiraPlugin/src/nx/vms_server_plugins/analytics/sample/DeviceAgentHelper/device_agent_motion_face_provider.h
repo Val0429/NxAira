@@ -1,4 +1,6 @@
 #pragma once
+#ifndef DEVICE_AGENT_MOTION_FACE_PROVIDER_H
+#define DEVICE_AGENT_MOTION_FACE_PROVIDER_H
 
 #include <string>
 #include <memory>
@@ -43,3 +45,5 @@ private:
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

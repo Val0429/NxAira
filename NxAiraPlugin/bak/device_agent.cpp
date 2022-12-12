@@ -2,8 +2,6 @@
 
 #include "device_agent.h"
 
-#define NX_PRINT_PREFIX (this->logUtils.printPrefix)
-// #define NX_DEBUG_ENABLE_OUTPUT true
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
 
@@ -32,7 +30,6 @@ DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo):
     // Call the DeviceAgent helper class constructor telling it to verbosely report to stderr.
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true)
 {
-    // NX_PRINT << "I should have gotten something here!";
 }
 
 DeviceAgent::~DeviceAgent()
@@ -144,7 +141,6 @@ bool DeviceAgent::pushCompressedVideoFrame(const ICompressedVideoPacket* videoPa
  */
 bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPackets)
 {
-    NX_PRINT << "Val Pull!";
     // metadataPackets->push_back(generateObjectMetadataPacket().releasePtr());
 
     return true; //< There were no errors while filling metadataPackets.

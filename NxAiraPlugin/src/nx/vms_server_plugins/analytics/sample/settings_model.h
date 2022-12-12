@@ -1,4 +1,6 @@
 #pragma once
+#ifndef SETTINGS_MODEL_H
+#define SETTINGS_MODEL_H
 
 #include <string>
 
@@ -100,3 +102,5 @@ static const std::string kAirafacePDEventPersonDetectionSetting = SET_PARSE+"PDE
 } // namespace analytics
 } // namespace vms_server_plugins
 } // namespace nx
+
+#endif

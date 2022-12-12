@@ -1,21 +1,21 @@
 #include "util.h"
+#include "spdlog/spdlog.h"
 
 #include <algorithm>
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 #define DEFAULT_LOG_LEVEL spdlog::level::info
 
-bool toBool(std::string str) {
-    std::transform(str.begin(), str.begin(), str.end(), ::tolower);
-    return str == "true" || str == "1";
-}
-
 /// logger
+std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag) {
+    return CreateLogger(tag, "info");
+}
 std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const std::string& logLevel) {
     return CreateLogger(tag, GetLogLevel(logLevel));
 }
 std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const spdlog::level::level_enum& logLevel) {
-    std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt(tag, "logs/val.log", true);
+    std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt(tag, "logs/val-"+tag+".log", true);
     spdlog::flush_every(std::chrono::seconds(1));
     logger->set_level(logLevel);
     return logger;
