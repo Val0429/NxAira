@@ -445,7 +445,12 @@ decltype(AiraFaceServer::detectHolder.getFuture()) AiraFaceServer::doDetect(
     std::string url = baseUrl(uri);
 
     /// send request
-    decltype(detectHolder)::FutureMessageType result = std::async(std::launch::async, [&, this, url]() {
+    decltype(detectHolder)::FutureMessageType result = std::async(std::launch::async, [
+        this, url,
+        base64_image,
+        enableFacialRecognition, frMinimumFaceSize, frRecognitionScore,
+        enablePersonDetection, pdMinimumBodySize, pdDetectionScore
+        ]() {
         std::string jsonString, err;
         decltype(detectHolder)::MessageType res;
 
