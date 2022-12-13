@@ -62,10 +62,7 @@ public:
             return std::string("license: ") + license + ", count: " + std::to_string(count);
         }
         operator std::string() { return toString(); }
-        friend std::ostream& operator<<(std::ostream& os, const CLicenseInfo& o) {
-            os << o.toString();
-            return os;
-        }
+        friend std::ostream& operator<<(std::ostream& os, const CLicenseInfo& o) { os << o.toString(); return os; }
 
     public:
         std::string license;
@@ -77,6 +74,29 @@ public:
     decltype(licenseHolder.getFuture()) getLicense();
     decltype(licenseHolder.getFuture()) setLicense(const std::string license);
     /* #endregion LICENSE */
+
+    /* #region DETECT */
+public:
+    class CDetectInfo {
+    public:
+        /// string conversion
+        std::string toString() const {
+            return std::string("uuid: ") + detect_uuid;
+        }
+        operator std::string() { return toString(); }
+        friend std::ostream& operator<<(std::ostream& os, const CDetectInfo& o) { os << o.toString(); return os; }
+    public:
+        std::string detect_uuid;
+    };
+public:
+    val::ValueHolder<CDetectInfo> detectHolder;
+public:
+    decltype(detectHolder.getFuture()) doDetect(
+        std::string base64_image,
+        bool enableFacialRecognition, double frMinimumFaceSize, double frRecognitionScore,
+        bool enablePersonDetection, double pdMinimumBodySize, double pdDetectionScore
+    );
+    /* #endregion DETECT */
 
 private:
     std::string baseUrl(std::string uri);
@@ -91,7 +111,9 @@ private:
         GetLicenseSuccess,
         GetLicenseFailed,
         SetLicenseSuccess,
-        SetLicenseFailed
+        SetLicenseFailed,
+        DetectSuccess,
+        DetectFailed
     };
 
     template<typename Value>
@@ -104,6 +126,8 @@ private:
                 break;
             case EventCode::GetLicenseSuccess: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Get License", o); break; }
             case EventCode::GetLicenseFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Get License Failed", o); break; }
+            case EventCode::DetectSuccess: { break; }
+            case EventCode::DetectFailed: { engine.pushEvent(IPluginDiagnosticEvent::Level::info, "Detect Failed", o); break; }
             case EventCode::SetLicenseSuccess:
             case EventCode::SetLicenseFailed:
                 break;

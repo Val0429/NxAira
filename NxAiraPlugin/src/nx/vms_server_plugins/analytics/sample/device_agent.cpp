@@ -125,11 +125,35 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
 
         /// 2) base64 image
         std::string base64_string = frame.getBase64String();
+        logger->info("Hihi! {}", R"json(
+{
+    "base64_image": ")json" + base64_string + R"json(",
+
+    "enable_facial_recognition": )json" + (enableFacialRecognition ? "true" : "false") + R"json(,
+    "fr_minimum_face_size": )json" + std::to_string(frMinimumFaceSize) + R"json(,
+    "fr_recognition_score": )json" + std::to_string(frRecognitionScore) + R"json(,
+
+    "enable_person_detection": )json" + (enablePersonDetection ? "true" : "false") + R"json(,
+    "pd_minimum_body_size": )json" + std::to_string(pdMinimumBodySize) + R"json(,
+    "pd_detection_score": )json" + std::to_string(pdDetectionScore) + R"json(
+}
+)json");
+        auto res = engine.server.doDetect(
+            base64_string,
+            enableFacialRecognition,
+            frMinimumFaceSize,
+            frRecognitionScore,
+            enablePersonDetection,
+            pdMinimumBodySize,
+            pdDetectionScore
+        );
+        logger->info("Hello! {} / {}", res->get().toString());
+
         // logger->info("encode! {}", base64_string);
         // logger->info("haha {} / {}", elapsedms, periodms);
 
         /// 4) send to server
-        
+
     }
 
     // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);

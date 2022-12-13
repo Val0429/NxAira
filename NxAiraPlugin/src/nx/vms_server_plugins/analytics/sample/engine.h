@@ -39,10 +39,10 @@ public:
         nx::sdk::IPluginDiagnosticEvent::Level level,
         std::string caption,
         const std::string& description);
+public:
+    val::AiraFaceServer server;
 private:
     int licenseUsed;
-    val::AiraFaceServer server;
-
 private:
     std::shared_ptr<spdlog::logger> logger;
 };

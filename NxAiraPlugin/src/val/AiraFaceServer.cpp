@@ -16,6 +16,7 @@
 #define LOGIN_HEAD "[LOGIN] "
 #define MAINTAIN_HEAD "[MAINTAIN] "
 #define LICENSE_HEAD "[LICENSE] "
+#define DETECT_HEAD "[DETECT] "
 #define DEBUG
 
 namespace val {
@@ -432,6 +433,91 @@ R"json(
     return licenseHolder.setFuture(std::move(result), true);
 }
 /* #endregion LICENSE */
+
+/* #region DETECT */
+decltype(AiraFaceServer::detectHolder.getFuture()) AiraFaceServer::doDetect(
+    std::string base64_image,
+    bool enableFacialRecognition, double frMinimumFaceSize, double frRecognitionScore,
+    bool enablePersonDetection, double pdMinimumBodySize, double pdDetectionScore
+) {
+    /// concat fullUrl
+    const std::string uri = "/detect";
+    std::string url = baseUrl(uri);
+
+    /// send request
+    decltype(detectHolder)::FutureMessageType result = std::async(std::launch::async, [&, this, url]() {
+        std::string jsonString, err;
+        decltype(detectHolder)::MessageType res;
+
+        /// messages
+        const std::string msg_err_get_token = "fetch token timeout@dodetect";
+        const std::string msg_success = "success@dodetect";
+        const std::string msg_failed = "failed@dodetect";
+
+        do {
+            /// get token
+            auto token_future = this->login();
+            auto status = token_future->wait_for(std::chrono::milliseconds(1000));
+            if (status == std::future_status::timeout) {
+                res = val::error(val::ErrorCode::networkError, msg_err_get_token);
+                NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << res NX_DEBUG_ENDL;
+                break;
+            }
+            auto token = token_future->get();
+            if (!token.isOk()) {
+                res = val::error(val::ErrorCode::networkError, msg_err_get_token + "[2]");
+                break;
+            }
+
+            /// actual request
+            try {
+                const std::string finalUrl = url;
+                http::Request request {finalUrl};
+                const auto response = request.send("POST",
+R"json(
+{
+    "base64_image": ")json" + base64_image + R"json(",
+
+    "enable_facial_recognition": )json" + (enableFacialRecognition ? "true" : "false") + R"json(,
+    "fr_minimum_face_size": )json" + std::to_string(frMinimumFaceSize) + R"json(,
+    "fr_recognition_score": )json" + std::to_string(frRecognitionScore) + R"json(,
+
+    "enable_person_detection": )json" + (enablePersonDetection ? "true" : "false") + R"json(,
+    "pd_minimum_body_size": )json" + std::to_string(pdMinimumBodySize) + R"json(,
+    "pd_detection_score": )json" + std::to_string(pdDetectionScore) + R"json(
+}
+)json",
+                    {
+                        {"Content-Type", "application/json"},
+                        {"token", token.value()}
+                    },
+                    std::chrono::milliseconds(1000));
+
+                jsonString = std::string {response.body.begin(), response.body.end()};
+                nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
+
+                NX_DEBUG_STREAM << PR_HEAD << DETECT_HEAD << msg_success << jsonString NX_DEBUG_ENDL;
+                CDetectInfo info;
+                info.detect_uuid = json["detect_uuid"].string_value();
+                res = std::move(info);
+                break;
+
+            } catch(const std::exception& ex) {
+                res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
+                NX_DEBUG_STREAM << PR_HEAD << DETECT_HEAD << res NX_DEBUG_ENDL;
+                break;
+            }
+
+        } while(0);
+
+        pushEvent(res.isOk() ? EventCode::DetectSuccess : EventCode::DetectFailed, res);
+        if (res.isOk()) detectHolder.onNext(res);
+        return res;
+    });
+    
+    return detectHolder.setFuture(std::move(result), true);
+}
+/* #endregion DETECT */
 
 std::string AiraFaceServer::baseUrl(std::string uri) {
     std::ostringstream strm;
