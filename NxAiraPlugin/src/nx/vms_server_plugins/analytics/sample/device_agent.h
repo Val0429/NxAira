@@ -5,6 +5,7 @@
 #include <set>
 #include <thread>
 #include <memory>
+#include <chrono>
 
 #include <nx/sdk/analytics/helpers/consuming_device_agent.h>
 #include <nx/sdk/helpers/uuid_helper.h>
@@ -69,6 +70,7 @@ private:
 private:
     std::shared_ptr<spdlog::logger> logger;
     DeviceAgentMotionFaceProvider motionProvider;
+    std::chrono::steady_clock::time_point lastTime;
 };
 
 } // namespace sample

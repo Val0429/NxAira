@@ -2,11 +2,12 @@
 
 #include "device_agent.h"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/thread/thread.hpp>
+
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
 #include "spdlog/spdlog.h"
-
-#include <chrono>
 
 #include <nx/sdk/analytics/helpers/event_metadata.h>
 #include <nx/sdk/analytics/helpers/event_metadata_packet.h>
@@ -47,6 +48,7 @@ std::string DeviceAgent::manifestString() const {
 
 Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     std::map<std::string, std::string> settings = currentSettings();
+    logger->info("Setting Thread id: {}", boost::lexical_cast<std::string>(boost::this_thread::get_id()));
 
     /// Load Settings
     /// FR
@@ -68,20 +70,20 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     nx::kit::utils::fromString(settingValue(kAirafacePDEventPersonDetectionSetting), &pdEventPersonDetection);
 
     /// Report
-    this->logger->info(__func__);
-    this->logger->info("enable FR? {}", enableFacialRecognition);
-    this->logger->info("FR minimum face size? {}", frMinimumFaceSize);
-    this->logger->info("FR recognition score? {}", frRecognitionScore);
-    this->logger->info("FR recognition fps? {}", frFPS);
-    this->logger->info("FR Event watchlist? {}", frEventWatchlist);
-    this->logger->info("FR Event registered? {}", frEventRegistered);
-    this->logger->info("FR Event visitor? {}", frEventVisitor);
-    this->logger->info("FR Event stranger? {}", frEventStranger);
-    this->logger->info("enable PD? {}", enablePersonDetection);
-    this->logger->info("PD minimum body size? {}", pdMinimumBodySize);
-    this->logger->info("PD detection score? {}", pdDetectionScore);
-    this->logger->info("PD recognition fps? {}", pdRecognitionFPS);
-    this->logger->info("PD Event detection? {}", pdEventPersonDetection);
+    logger->info(__func__);
+    logger->info("enable FR? {}", enableFacialRecognition);
+    logger->info("FR minimum face size? {}", frMinimumFaceSize);
+    logger->info("FR recognition score? {}", frRecognitionScore);
+    logger->info("FR recognition fps? {}", frFPS);
+    logger->info("FR Event watchlist? {}", frEventWatchlist);
+    logger->info("FR Event registered? {}", frEventRegistered);
+    logger->info("FR Event visitor? {}", frEventVisitor);
+    logger->info("FR Event stranger? {}", frEventStranger);
+    logger->info("enable PD? {}", enablePersonDetection);
+    logger->info("PD minimum body size? {}", pdMinimumBodySize);
+    logger->info("PD detection score? {}", pdDetectionScore);
+    logger->info("PD recognition fps? {}", pdRecognitionFPS);
+    logger->info("PD Event detection? {}", pdEventPersonDetection);
 
     const auto settingsResponse = new nx::sdk::SettingsResponse();
     settingsResponse->setModel(engine.getManifestModel());
@@ -100,21 +102,34 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
 //     return true;
 // }
 
-bool first = true;
-bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {
-    bool motion_detected = detectMotion(videoFrame);
+bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {    
+    /// one should be enabled to detect
+    if (!enableFacialRecognition && !enablePersonDetection) return true;
+    /// determine FPS
+    double fps = std::min(frFPS, pdRecognitionFPS);
+    double periodms = fps == 0 ? 0 : (1000/fps);
 
-    if (motion_detected && first) {
-        first = false;
+    bool motion_detected = detectMotion(videoFrame);
+    if (motion_detected) {
+        /// calculate time
+        auto now = std::chrono::high_resolution_clock::now();
+        double elapsedms = std::chrono::duration<double, std::milli>(now-lastTime).count();
+        lastTime = now;
+        /// ignore less than interval
+        if (elapsedms < periodms) return true;
+
+        logger->info("Uncompressed Thread id: {}", boost::lexical_cast<std::string>(boost::this_thread::get_id()));
+
         /// 1) take out picture
         Frame frame(videoFrame);
 
         /// 2) base64 image
         std::string base64_string = frame.getBase64String();
-        logger->info("encode! {}", base64_string);
+        // logger->info("encode! {}", base64_string);
+        // logger->info("haha {} / {}", elapsedms, periodms);
 
-        /// 3) base64 image
         /// 4) send to server
+        
     }
 
     // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
