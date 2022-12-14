@@ -7,7 +7,7 @@
 #include <nx/sdk/analytics/i_uncompressed_video_frame.h>
 
 #include "fwd/opencv.h"
-#include "fwd/spdlog.h"
+#include "util.h"
 
 namespace nx {
 namespace vms_server_plugins {
@@ -34,7 +34,7 @@ public:
     std::string getBase64String();
 
 private:
-    static std::shared_ptr<spdlog::logger> sharedLogger;
+    static inline std::shared_ptr<spdlog::logger> sharedLogger = CreateLogger("Frame");
     std::shared_ptr<spdlog::logger> logger;
 };
 

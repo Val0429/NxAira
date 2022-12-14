@@ -11,6 +11,9 @@
 
 #include "./../lib/HTTPRequest.hpp"
 
+#include "util.h"
+#include "spdlog/spdlog.h"
+
 #define PROTOCOL "http"
 #define PR_HEAD "[AiraFaceServer] "
 #define LOGIN_HEAD "[LOGIN] "

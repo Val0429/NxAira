@@ -69,6 +69,8 @@ private:
 
 private:
     std::shared_ptr<spdlog::logger> logger;
+
+private:
     DeviceAgentMotionFaceProvider motionProvider;
     std::chrono::steady_clock::time_point lastTime;
 };

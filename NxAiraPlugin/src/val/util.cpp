@@ -1,9 +1,12 @@
 #include "util.h"
-#include "spdlog/spdlog.h"
 
 #include <algorithm>
+#include <map>
+
+
+#include "spdlog/spdlog.h"
+#include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
 
 #define DEFAULT_LOG_LEVEL spdlog::level::info
 
@@ -14,12 +17,39 @@ std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag) {
 std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const std::string& logLevel) {
     return CreateLogger(tag, GetLogLevel(logLevel));
 }
+
 std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const spdlog::level::level_enum& logLevel) {
-    std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt(tag, "logs/val-"+tag+".log", true);
+    static std::map<std::string,
+        std::shared_ptr<spdlog::sinks::basic_file_sink_mt>
+        > loggerMapping;
+    std::string key = "logs/val-"+tag+".log";
+    auto instance = loggerMapping.find(key);
+    std::shared_ptr<spdlog::sinks::basic_file_sink_mt> o;
+
+    if (instance != loggerMapping.end()) {
+        o = instance->second;
+    } else {
+        o = std::make_shared<spdlog::sinks::basic_file_sink_mt>(key, true);
+        loggerMapping[key] = o;
+    }
+
+    std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>(tag, o);
     spdlog::flush_every(std::chrono::seconds(1));
     logger->set_level(logLevel);
     return logger;
 }
+// std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const spdlog::level::level_enum& logLevel) {
+//     std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt(tag, "logs/val-"+tag+".log", true);
+//     spdlog::flush_every(std::chrono::seconds(1));
+//     logger->set_level(logLevel);
+//     return logger;
+// }
+// std::shared_ptr<spdlog::logger> CreateLogger(const std::string& tag, const spdlog::level::level_enum& logLevel) {
+//     std::shared_ptr<spdlog::logger> logger = spdlog::basic_logger_mt<spdlog::async_factory>(tag, "logs/val-"+tag+".log", true);
+//     spdlog::flush_every(std::chrono::seconds(1));
+//     logger->set_level(logLevel);
+//     return logger;
+// }
 
 spdlog::level::level_enum GetLogLevel(const std::string& level) {
     auto llevel = ToLower(level);

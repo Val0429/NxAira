@@ -6,8 +6,9 @@
 
 #include <nx/kit/debug.h>
 #include <nx/sdk/helpers/settings_response.h>
-#include "spdlog/spdlog.h"
 
+#include "util.h"
+#include "spdlog/spdlog.h"
 #include "settings_model.h"
 
 namespace nx {

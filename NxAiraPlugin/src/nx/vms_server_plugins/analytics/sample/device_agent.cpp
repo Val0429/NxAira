@@ -7,6 +7,8 @@
 
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
+
+#include "util.h"
 #include "spdlog/spdlog.h"
 
 #include <nx/sdk/analytics/helpers/event_metadata.h>
@@ -29,6 +31,7 @@ namespace aira {
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
 
+// std::shared_ptr<spdlog::logger> Frame::sharedLogger = CreateLogger("DeviceAgent");
 
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),

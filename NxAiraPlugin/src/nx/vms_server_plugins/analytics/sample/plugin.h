@@ -4,7 +4,8 @@
 
 #include <nx/sdk/analytics/helpers/plugin.h>
 #include <nx/sdk/analytics/i_engine.h>
-#include "fwd/spdlog.h"
+
+#include "util.h"
 
 namespace nx {
 namespace vms_server_plugins {

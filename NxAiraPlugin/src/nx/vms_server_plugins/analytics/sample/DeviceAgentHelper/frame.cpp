@@ -22,8 +22,6 @@ namespace vms_server_plugins {
 namespace analytics {
 namespace aira {
 
-std::shared_ptr<spdlog::logger> Frame::sharedLogger = CreateLogger("Frame");
-
 Frame::Frame(const nx::sdk::analytics::IUncompressedVideoFrame* frame):
     width(frame->width()),
     height(frame->height()),
