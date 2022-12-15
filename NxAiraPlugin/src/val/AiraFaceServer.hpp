@@ -89,12 +89,13 @@ public:
     public:
         /// string conversion
         std::string toString() const {
-            return std::string("uuid: ") + detect_uuid;
+            return std::string("uuid: ") + detect_uuid + ", data: " + (json.dump());
         }
         operator std::string() { return toString(); }
         friend std::ostream& operator<<(std::ostream& os, const CDetectInfo& o) { os << o.toString(); return os; }
     public:
         std::string detect_uuid;
+        nx::kit::Json json;
     };
 public:
     val::ValueHolder<CDetectInfo> detectHolder;

@@ -9,6 +9,7 @@
 
 #include <nx/sdk/analytics/helpers/consuming_device_agent.h>
 #include <nx/sdk/helpers/uuid_helper.h>
+#include <nx/kit/json.h>
 
 #include "util.h"
 #include "engine.h"
@@ -50,7 +51,11 @@ protected:
         const nx::sdk::analytics::IMetadataTypes* neededMetadataTypes) override;
 
 private:
+    std::mutex pp_mutex;
+    std::vector<nx::sdk::analytics::IMetadataPacket*> pendingPackets;
     bool detectMotion(const nx::sdk::analytics::IUncompressedVideoFrame* videoPacket);
+    nx::sdk::Uuid getUuidByString(const std::string& key);
+    void handleDetectionData(nx::kit::Json data, int64_t timestamp);
 
 private:
     bool enableFacialRecognition;

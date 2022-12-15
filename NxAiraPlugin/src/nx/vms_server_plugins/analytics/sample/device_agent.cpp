@@ -123,25 +123,24 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
 
         /// 1) take out picture
         Frame frame(videoFrame);
+        const int64_t timestamp = frame.timestampUs;
 
         /// 2) base64 image
         std::string base64_string = frame.getBase64String();
-        auto res = engine.server.doDetect(
-            base64_string,
-            enableFacialRecognition,
-            frMinimumFaceSize,
-            frRecognitionScore,
-            enablePersonDetection,
-            pdMinimumBodySize,
-            pdDetectionScore
-        );
-        // logger->info("Hello! {}", res->get().toString());
-
-        // logger->info("encode! {}", base64_string);
-        // logger->info("haha {} / {}", elapsedms, periodms);
-
-        /// 4) send to server
-
+        /// 3) send to server
+        std::thread([this, timestamp, base64_string = std::move(base64_string)]() {
+            auto res = engine.server.doDetect(
+                base64_string,
+                enableFacialRecognition,
+                frMinimumFaceSize,
+                frRecognitionScore,
+                enablePersonDetection,
+                pdMinimumBodySize,
+                pdDetectionScore
+            );
+            logger->info("Match detect! {}", res->get().toString());
+            this->handleDetectionData(res->get().value().json, timestamp);
+        }).detach();
     }
 
     // Ptr<ObjectMetadata> metadata = motionProvider.feedWithMotion(motion_detected);
@@ -158,7 +157,126 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
     return true; // no errors
 }
 
+nx::sdk::Uuid DeviceAgent::getUuidByString(const std::string& key) {
+    static std::map<std::string, nx::sdk::Uuid> uuidMapping;
+    auto o = uuidMapping.find(key);
+    if (o != uuidMapping.end()) return o->second;
+    uuidMapping[key] = UuidHelper::randomUuid();
+    return uuidMapping[key];
+}
+
+void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
+    /* #region Data */
+    // {
+    //     "detect_uuid": "5b33418c-4a69-40c8-9e6a-56c7d36e5e24",
+    //     "result": [
+    /* #region Person */
+    //         {
+    //             "body_attributes": {
+    //                 "has_backpack": false, "has_bag": false, "has_coat_jacket": false, "has_hat": false, "has_longhair": false, "has_longpants": true, "has_longsleeves": false, "is_male": true,
+    //                 "top_5_colors": [{"color": "brown", "count": 4}, {"color": "yellow", "count": 3}, {"color": "red", "count": 2}, {"color": "orange", "count": 1}]
+    //             },
+    //             "body_position": {"x0": 0.75156199999999995, "x1": 0.87187499999999996, "y0": 0.122222, "y1": 0.70555599999999996},
+    //             "body_uuid": "c9a2b84c-7b98-4041-93fd-e4d20baab802",
+    //             "type": "person"
+    //         },
+    /* #endregion Person */
+    /* #region Face - Stranger */
+    //         {
+    //             "face_position": {"x0": 0.24609400000000001, "x1": 0.26171899999999998, "y0": 0.63888900000000004, "y1": 0.66666700000000001},
+    //             "face_uuid": "ea6916b9-376d-4a02-b0a9-0a6cbd8ca005",
+    //             "is_registered_person": false,
+    //             "type": "face"
+    //         },
+    /* #endregion Face - Stranger */
+    /* #region Face - Recognize */
+    //         {
+    //             "face_position": {"x0": 0.32187500000000002, "x1": 0.45703100000000002, "y0": 0.065277799999999997, "y1": 0.30555599999999999},
+    //             "face_uuid": "afa3fc3c-3409-4e7a-93d1-89c0d62c9724",
+    //             "is_registered_person": true,
+    //             "person_info": {
+    //                 "group": ["All Visitor"],
+    //                 "is_visitor": true,
+    //                 "is_watchlist_1": false,
+    //                 "is_watchlist_2": false,
+    //                 "is_watchlist_3": true,
+    //                 "is_watchlist_4": false,
+    //                 "is_watchlist_5": false,
+    //                 "person_id": "44103d96-5c5a-4f4b-b10a-a5e64fffd7a5",
+    //                 "person_name": "SomeOne"
+    //             },
+    //             "type": "face"
+    //         }
+    //     ],
+    //     "timestamp": 1671111000016
+    // }
+    /* #endregion Face - Recognize */
+    /* #endregion Data */
+
+    auto& results = data["result"];
+    if (results.is_array()) {
+        const std::vector<nx::kit::Json>& items = results.array_items();
+        if (items.size() > 0) {
+            auto objectMetadataPacket = makePtr<ObjectMetadataPacket>();
+
+            for (auto it = items.cbegin(); it != items.cend(); ++it) {
+                auto objectMetadata = makePtr<ObjectMetadata>();
+                auto& item = *it;
+
+                /// get type: person / face
+                std::string type = item["type"].string_value();
+                if (type == "person") {
+                    objectMetadata->setTypeId("nx.base.Person");
+                    auto& pos = item["body_position"];
+                    double x = pos["x0"].number_value();
+                    double y = pos["y0"].number_value();
+                    double width = pos["x1"].number_value() - x;
+                    double height = pos["y1"].number_value() - y;
+                    objectMetadata->setBoundingBox(Rect(x, y, width, height));
+                    objectMetadata->setTrackId(
+                        getUuidByString(item["body_uuid"].string_value())
+                    );
+
+                } else if (type == "face") {
+                    objectMetadata->setTypeId("nx.base.Face");
+                    auto& pos = item["face_position"];
+                    double x = pos["x0"].number_value();
+                    double y = pos["y0"].number_value();
+                    double width = pos["x1"].number_value() - x;
+                    double height = pos["y1"].number_value() - y;
+                    objectMetadata->setBoundingBox(Rect(x, y, width, height));
+                    objectMetadata->setTrackId(
+                        getUuidByString(item["face_uuid"].string_value())
+                    );
+
+                } else {
+                    logger->error("Unknown type happens: {}", type);
+                    return;
+                }
+
+                objectMetadataPacket->addItem(objectMetadata.releasePtr());
+
+                // if (extractor(*it) >= value) {
+                //     list.emplace(it, std::move(data));
+                //     goto next;
+                // }
+            }
+            objectMetadataPacket->setTimestampUs(timestamp);
+            
+            const std::lock_guard<std::mutex> lock(pp_mutex);
+            pendingPackets.push_back(objectMetadataPacket.releasePtr());
+        }   
+    }
+}
+
 bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPackets) {
+    const std::lock_guard<std::mutex> lock(pp_mutex);
+    
+    while (pendingPackets.size() > 0) {
+        metadataPackets->push_back( pendingPackets.back() );
+        pendingPackets.pop_back();
+    }
+
     return true; // no errors
 }
 

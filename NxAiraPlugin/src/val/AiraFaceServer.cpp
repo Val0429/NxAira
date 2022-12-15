@@ -236,10 +236,14 @@ R"json(
             );
 
         } else if (msg->type == ix::WebSocketMessageType::Message) {
-            this->logger->info("Got message: {}", msg->str);
             std::string err;
             nx::kit::Json json = nx::kit::Json::parse(msg->str, err);
-            this->wsSubject.get_subscriber().on_next(std::move(json));
+            if (!json["detect_uuid"].is_null()) {
+                this->logger->info("Got detect: {}", msg->str);
+                this->wsSubject.get_subscriber().on_next(std::move(json));
+            } else {
+                this->logger->info("Got channel: {}", msg->str);
+            }
         }
     });
 }
@@ -524,6 +528,26 @@ R"json(
                 logger->info("{}{}", msg_success, jsonString);
                 CDetectInfo info;
                 info.detect_uuid = json["detect_uuid"].string_value();
+
+                /// wait for the response
+                std::promise<void> ready;
+                this->wsSubject.get_observable()
+                    .filter([&info](auto o) { return o["detect_uuid"] == info.detect_uuid ? true : false; })
+                    .first()
+                    .timeout(std::chrono::milliseconds(3000), rxcpp::observe_on_event_loop())
+                    .subscribe(
+                        [this, &info, &ready](auto o) {
+                            /// success
+                            info.json = o;
+                            ready.set_value();
+                        },
+                        [this, &ready](std::exception_ptr ep) {
+                            /// timeout
+                            ready.set_value();
+                        }
+                    );
+                ready.get_future().wait();
+
                 res = std::move(info);
                 break;
 
