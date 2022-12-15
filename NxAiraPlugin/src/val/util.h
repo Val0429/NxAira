@@ -18,4 +18,9 @@ spdlog::level::level_enum GetLogLevel(const std::string& level);
 /// string
 std::string ToLower(const std::string& input);
 
+// static inline std::shared_ptr<spdlog::logger> sharedEngineLogger = CreateLogger("Engine");
+// static inline std::shared_ptr<spdlog::logger> sharedDeviceAgentLogger = CreateLogger("DeviceAgent");
+// static inline std::shared_ptr<spdlog::logger> sharedFrameLogger = CreateLogger("Frame");
+// static inline std::shared_ptr<spdlog::logger> sharedServerLogger = CreateLogger("AiraServer");
+
 #endif

@@ -31,8 +31,6 @@ namespace aira {
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
 
-// std::shared_ptr<spdlog::logger> Frame::sharedLogger = CreateLogger("DeviceAgent");
-
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
     engine(engine),

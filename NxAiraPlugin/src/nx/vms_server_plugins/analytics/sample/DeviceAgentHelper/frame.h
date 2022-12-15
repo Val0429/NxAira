@@ -34,7 +34,6 @@ public:
     std::string getBase64String();
 
 private:
-    static inline std::shared_ptr<spdlog::logger> sharedLogger = CreateLogger("Frame");
     std::shared_ptr<spdlog::logger> logger;
 };
 

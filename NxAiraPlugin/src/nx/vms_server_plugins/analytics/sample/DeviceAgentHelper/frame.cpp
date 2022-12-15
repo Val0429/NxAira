@@ -27,7 +27,7 @@ Frame::Frame(const nx::sdk::analytics::IUncompressedVideoFrame* frame):
     height(frame->height()),
     timestampUs(frame->timestampUs()),
     frame(frame),
-    logger(sharedLogger)
+    logger(CreateLogger("Frame"))
     {
 }
 

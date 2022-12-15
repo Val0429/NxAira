@@ -2,6 +2,9 @@
 #ifndef AIRAFACESERVER_H
 #define AIRAFACESERVER_H
 
+
+#define WIN32_LEAN_AND_MEAN
+
 #include <set>
 #include <thread>
 #include <string>
@@ -9,7 +12,7 @@
 #include <future>
 #include <mutex>
 
-
+#include "fwd/spdlog.h"
 #include "./../val/ValueHolder.h"
 
 namespace nx {
@@ -100,6 +103,9 @@ public:
 
 private:
     std::string baseUrl(std::string uri);
+
+private:
+    std::shared_ptr<spdlog::logger> logger;
 
 /// Event Handling
 private:

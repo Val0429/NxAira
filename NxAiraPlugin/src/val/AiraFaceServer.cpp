@@ -15,7 +15,7 @@
 #include "spdlog/spdlog.h"
 
 #define PROTOCOL "http"
-#define PR_HEAD "[AiraFaceServer] "
+#define PR_HEAD "[AiraServer] "
 #define LOGIN_HEAD "[LOGIN] "
 #define MAINTAIN_HEAD "[MAINTAIN] "
 #define LICENSE_HEAD "[LICENSE] "
@@ -28,7 +28,8 @@ const std::string TIMEOUT = std::string("Request timed out");
 
 AiraFaceServer::AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine) :
 engine(engine),
-token_maintain(&AiraFaceServer::maintain_handler, this)
+token_maintain(&AiraFaceServer::maintain_handler, this),
+logger(CreateLogger("AiraServer"))
 {
     token_maintain.detach();
 }
@@ -446,6 +447,7 @@ decltype(AiraFaceServer::detectHolder.getFuture()) AiraFaceServer::doDetect(
     /// concat fullUrl
     const std::string uri = "/detect";
     std::string url = baseUrl(uri);
+    logger->info("do detect");
 
     /// send request
     decltype(detectHolder)::FutureMessageType result = std::async(std::launch::async, [
