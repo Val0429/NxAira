@@ -2,6 +2,10 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <nx/sdk/analytics/helpers/plugin.h>
 #include <nx/sdk/analytics/i_engine.h>
 
@@ -15,7 +19,8 @@ namespace aira {
 class Plugin: public nx::sdk::analytics::Plugin
 {
 public:
-    Plugin() = default;
+    Plugin();
+    ~Plugin();
 
 protected:
     virtual nx::sdk::Result<nx::sdk::analytics::IEngine*> doObtainEngine() override;

@@ -7,6 +7,8 @@
 #include <nx/kit/json.h>
 #include <nx/kit/debug.h>
 
+#include <ixwebsocket/IXUserAgent.h>
+
 #include "./../nx/vms_server_plugins/analytics/sample/engine.h"
 
 #include "./../lib/HTTPRequest.hpp"
@@ -20,6 +22,7 @@
 #define MAINTAIN_HEAD "[MAINTAIN] "
 #define LICENSE_HEAD "[LICENSE] "
 #define DETECT_HEAD "[DETECT] "
+#define WS_HEAD "[WEBSOCKET]"
 #define DEBUG
 
 namespace val {
@@ -28,10 +31,10 @@ const std::string TIMEOUT = std::string("Request timed out");
 
 AiraFaceServer::AiraFaceServer(nx::vms_server_plugins::analytics::aira::Engine& engine) :
 engine(engine),
-token_maintain(&AiraFaceServer::maintain_handler, this),
+th_maintainhandle(&AiraFaceServer::maintain_handler, this),
 logger(CreateLogger("AiraServer"))
 {
-    token_maintain.detach();
+    th_maintainhandle.detach();
 }
 
 /* #region LOGIN */
@@ -189,7 +192,7 @@ decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::maintain() {
 // NX_DEBUG_STREAM << "b555555555555555555555" NX_DEBUG_ENDL;            
 // #endif
 
-                NX_DEBUG_STREAM << "[AiraFaceServer] maintain function successfully" NX_DEBUG_ENDL;
+                NX_DEBUG_STREAM << PR_HEAD << "maintain function successfully" NX_DEBUG_ENDL;
                 res = json["token"].string_value();
                 break;
 
@@ -205,7 +208,41 @@ decltype(AiraFaceServer::tokenHolder.getFuture()) AiraFaceServer::maintain() {
     
     return std::make_shared<decltype(tokenHolder)::FutureMessageType>(std::move(result));
 }
+/* #endregion MAINTAIN */
 
+/* #region WS_HANDLER */
+void AiraFaceServer::InitWebSocket() {
+    const std::string uri = "/metadata";
+    std::string url = baseUrl(uri);
+    webSocket.setUrl(url);
+    /// reconnect
+    webSocket.setMinWaitBetweenReconnectionRetries(1000);
+    webSocket.enableAutomaticReconnection();
+
+    /// connect websocket
+    logger->info("Web socket connection start");
+    webSocket.start();
+    webSocket.setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
+        if (msg->type == ix::WebSocketMessageType::Open) {
+            this->logger->info("Web socket connection opened");
+            /// send token
+            auto token = tokenHolder.getValue()->value();
+            this->webSocket.send(
+R"json(
+{
+"token": ")json" + token + R"json("
+}
+)json"
+            );
+
+        } else if (msg->type == ix::WebSocketMessageType::Message) {
+            this->logger->info("Got message: {}", msg->str);
+        }
+    });
+}
+/* #endregion WS_HANDLER */
+
+/* #region MAINTAIN_HANDLER */
 void AiraFaceServer::maintain_handler() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
@@ -213,28 +250,10 @@ void AiraFaceServer::maintain_handler() {
         while (true) {
             auto token = tokenHolder.getFuture();
 
-            // /// login failed because of network error
-            // if (token != nullptr) {
-            //     auto status = token->wait_for(std::chrono::milliseconds(0));
-            //     if (status == std::future_status::ready && !token->get().isOk()) {
-            //         auto token_result = token->get();
-            //         if (token_result.error().errorCode() == val::ErrorCode::networkError) {
-            //             NX_DEBUG_STREAM << PR_HEAD << "network error. retry again..." NX_DEBUG_ENDL;
-            //             this->login(true);
-            //             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-            //             continue;
-            //         }
-            //         /// 2nd case, wait for login
-            //         NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
-            //         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            //         continue;
-            //     }
-            // }
-
             /// login failed because of network error
             if (token == nullptr) {
                 /// 2nd case, wait for login
-                NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                NX_DEBUG_STREAM << PR_HEAD << "maintain status: wait for login" NX_DEBUG_ENDL;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 continue;
             } else {
@@ -248,7 +267,7 @@ void AiraFaceServer::maintain_handler() {
                             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                         } else {
                             /// 2nd case, wait for login
-                            NX_DEBUG_STREAM << "[AiraFaceServer] maintain status: wait for login" NX_DEBUG_ENDL;
+                            NX_DEBUG_STREAM << PR_HEAD << "maintain status: wait for login" NX_DEBUG_ENDL;
                             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                         }
                         continue;
@@ -256,6 +275,13 @@ void AiraFaceServer::maintain_handler() {
                 }
             }
 
+            /// do websocket connect
+            static std::once_flag onceFlag;
+            std::call_once(onceFlag, [this] {
+                this->InitWebSocket();
+            });
+
+            /// do maintain
             auto res = this->maintain();
             auto mtoken = res->get();
             if (mtoken.isOk()) {
@@ -273,7 +299,7 @@ void AiraFaceServer::maintain_handler() {
         NX_DEBUG_STREAM << PR_HEAD << MAINTAIN_HEAD << "What's the exception here?" << ex.what() NX_DEBUG_ENDL;
     }
 }
-/* #endregion MAINTAIN */
+/* #endregion MAINTAIN_HANDLER */
 
 /* #region LICENSE */
 decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense() {
@@ -328,19 +354,6 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
                 info.count = json["channel_amount"].int_value();
                 res = std::move(info);
                 break;
-
-                // std::string message = json["message"].string_value();
-                // if (message != "ok") {
-                //     res = val::error(val::ErrorCode::otherError, message);
-                //     break;
-                // }
-                // NX_DEBUG_STREAM << PR_HEAD << LICENSE_HEAD << msg_success NX_DEBUG_ENDL;
-                // CLicenseInfo info;
-                // auto jlicense = json["license"];
-                // info.license = jlicense["license"].string_value();
-                // info.count = jlicense["fcs_amount"].int_value();
-                // res = std::move(info);
-                // break;
 
             } catch(const std::exception& ex) {
                 res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());

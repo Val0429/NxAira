@@ -165,6 +165,7 @@ target_link_libraries(NxAiraPlugin
     opencv::plot opencv::opencv_features2d opencv::opencv_calib3d opencv::datasets opencv::video opencv::tracking
     Boost::boost Boost::thread
     base64::base64
+    ixwebsocket::ixwebsocket
 )
 target_compile_options(NxAiraPlugin PRIVATE -wd4566 -wd4819)
 target_compile_definitions(NxAiraPlugin

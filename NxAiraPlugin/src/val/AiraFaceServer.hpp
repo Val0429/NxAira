@@ -12,6 +12,8 @@
 #include <future>
 #include <mutex>
 
+#include <ixwebsocket/IXWebSocket.h>
+
 #include "fwd/spdlog.h"
 #include "./../val/ValueHolder.h"
 
@@ -50,7 +52,7 @@ public:
 
     /* #region MAINTAIN */
 private:
-    std::thread token_maintain;
+    std::thread th_maintainhandle;
     void maintain_handler();
 public:
     decltype(tokenHolder.getFuture()) maintain();
@@ -103,6 +105,12 @@ public:
 
 private:
     std::string baseUrl(std::string uri);
+
+    /* #region WSHandler */
+private:
+    ix::WebSocket webSocket;
+    void InitWebSocket();
+    /* #endregion WSHandler */
 
 private:
     std::shared_ptr<spdlog::logger> logger;
