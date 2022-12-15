@@ -12,10 +12,13 @@
 #include <future>
 #include <mutex>
 
+#include <nx/kit/json.h>
+
 #include <ixwebsocket/IXWebSocket.h>
+#include "rxcpp/rx.hpp"
 
 #include "fwd/spdlog.h"
-#include "./../val/ValueHolder.h"
+#include "ValueHolder.h"
 
 namespace nx {
     namespace vms_server_plugins {
@@ -109,6 +112,7 @@ private:
     /* #region WSHandler */
 private:
     ix::WebSocket webSocket;
+    rxcpp::subjects::subject<nx::kit::Json> wsSubject;
     void InitWebSocket();
     /* #endregion WSHandler */
 

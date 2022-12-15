@@ -237,6 +237,9 @@ R"json(
 
         } else if (msg->type == ix::WebSocketMessageType::Message) {
             this->logger->info("Got message: {}", msg->str);
+            std::string err;
+            nx::kit::Json json = nx::kit::Json::parse(msg->str, err);
+            this->wsSubject.get_subscriber().on_next(std::move(json));
         }
     });
 }
@@ -460,7 +463,6 @@ decltype(AiraFaceServer::detectHolder.getFuture()) AiraFaceServer::doDetect(
     /// concat fullUrl
     const std::string uri = "/detect";
     std::string url = baseUrl(uri);
-    logger->info("do detect");
 
     /// send request
     decltype(detectHolder)::FutureMessageType result = std::async(std::launch::async, [
@@ -519,7 +521,7 @@ R"json(
                 jsonString = std::string {response.body.begin(), response.body.end()};
                 nx::kit::Json json = nx::kit::Json::parse(jsonString, err);
 
-                NX_DEBUG_STREAM << PR_HEAD << DETECT_HEAD << msg_success << jsonString NX_DEBUG_ENDL;
+                logger->info("{}{}", msg_success, jsonString);
                 CDetectInfo info;
                 info.detect_uuid = json["detect_uuid"].string_value();
                 res = std::move(info);
@@ -527,7 +529,7 @@ R"json(
 
             } catch(const std::exception& ex) {
                 res = val::error(ex.what() == TIMEOUT ? val::ErrorCode::networkError : val::ErrorCode::otherError, ex.what());
-                NX_DEBUG_STREAM << PR_HEAD << DETECT_HEAD << res NX_DEBUG_ENDL;
+                logger->info("{}{}", msg_failed, static_cast<std::string>(res));
                 break;
             }
 

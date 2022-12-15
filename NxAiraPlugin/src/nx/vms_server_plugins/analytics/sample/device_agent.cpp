@@ -135,7 +135,7 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
             pdMinimumBodySize,
             pdDetectionScore
         );
-        logger->info("Hello! {}", res->get().toString());
+        // logger->info("Hello! {}", res->get().toString());
 
         // logger->info("encode! {}", base64_string);
         // logger->info("haha {} / {}", elapsedms, periodms);
