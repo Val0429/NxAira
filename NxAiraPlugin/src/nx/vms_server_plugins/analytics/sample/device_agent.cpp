@@ -115,9 +115,9 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
         /// calculate time
         auto now = std::chrono::high_resolution_clock::now();
         double elapsedms = std::chrono::duration<double, std::milli>(now-lastTime).count();
-        lastTime = now;
         /// ignore less than interval
         if (elapsedms < periodms) return true;
+        lastTime = now;
 
         logger->info("Uncompressed Thread id: {}", boost::lexical_cast<std::string>(boost::this_thread::get_id()));
 
@@ -234,7 +234,8 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     double height = pos["y1"].number_value() - y;
                     objectMetadata->setBoundingBox(Rect(x, y, width, height));
                     objectMetadata->setTrackId(
-                        getUuidByString(item["body_uuid"].string_value())
+                        // getUuidByString(item["body_uuid"].string_value())
+                        UuidHelper::randomUuid()
                     );
 
                 } else if (type == "face") {
@@ -246,7 +247,8 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     double height = pos["y1"].number_value() - y;
                     objectMetadata->setBoundingBox(Rect(x, y, width, height));
                     objectMetadata->setTrackId(
-                        getUuidByString(item["face_uuid"].string_value())
+                        // getUuidByString(item["face_uuid"].string_value())
+                        UuidHelper::randomUuid()
                     );
 
                 } else {
@@ -254,14 +256,20 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     return;
                 }
 
-                objectMetadataPacket->addItem(objectMetadata.releasePtr());
+                objectMetadataPacket->addItem(objectMetadata.get());
 
                 // if (extractor(*it) >= value) {
                 //     list.emplace(it, std::move(data));
                 //     goto next;
                 // }
             }
+
+            double fps = std::min(frFPS, pdRecognitionFPS);
+            double periodms = fps == 0 ? 0 : (1000/fps);
             objectMetadataPacket->setTimestampUs(timestamp);
+            logger->info("timestamp! {} {}", timestamp, periodms);
+            objectMetadataPacket->setDurationUs(periodms*1000);
+            // objectMetadataPacket->setDurationUs(2000000);
             
             const std::lock_guard<std::mutex> lock(pp_mutex);
             pendingPackets.push_back(objectMetadataPacket.releasePtr());
