@@ -2,8 +2,12 @@
 
 #include "device_agent.h"
 
+#include <algorithm>
+#include <numeric>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 #include <nx/kit/debug.h>
 #include <nx/kit/utils.h>
@@ -238,6 +242,28 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                         UuidHelper::randomUuid()
                     );
 
+                    do {
+                        auto bodyAttr = item["body_attributes"];
+                        if (!bodyAttr.is_object()) break;
+                        auto colorAttr = bodyAttr["top_5_colors"];
+                        if (!colorAttr.is_array()) break;
+                        auto colors = colorAttr.array_items();
+                        std::sort(colors.begin(), colors.end(), [](auto a, auto b) {
+                            return a["count"].number_value() < b["count"].number_value();
+                        });
+                        std::vector<std::string> colorNames;
+                        std::transform(colors.begin(), colors.end(), std::back_inserter(colorNames), [](auto o) {
+                            return o["color"].string_value();
+                        });
+                        /// add attributes
+                        for (int i=1; i<=colorNames.size(); i++) {
+                            objectMetadata->addAttribute(
+                                makePtr<Attribute>("Color"+std::to_string(i), colorNames[i-1])
+                            );
+                        }
+
+                    } while(0);
+
                 } else if (type == "face") {
                     objectMetadata->setTypeId("aira.ai.Face");
                     auto& pos = item["face_position"];
@@ -256,12 +282,55 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     return;
                 }
 
-                objectMetadataPacket->addItem(objectMetadata.get());
+                /// Generic Value
+                do {
+                    /// face not found
+                    if (!item["is_registered_person"].is_bool()) break;
+                    /// Attribute - Registered
+                    bool is_registered = item["is_registered_person"].bool_value();
+                    if (!is_registered) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
+                        break;
+                    }
+                    objectMetadata->addAttribute(makePtr<Attribute>("Registered", "true"));
 
-                // if (extractor(*it) >= value) {
-                //     list.emplace(it, std::move(data));
-                //     goto next;
-                // }
+                    auto person_info = item["person_info"];
+                    if (!person_info.is_object()) break;
+                    /// Attribute - Visitor
+                    if (person_info["is_visitor"].bool_value()) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
+                    }
+                    /// Attribute - Watchlist
+                    for (int i=1; ;i++) {
+                        auto isw_attr = person_info["is_watchlist_" + std::to_string(i)];
+                        if (!isw_attr.is_bool()) break;
+                        if (isw_attr.bool_value()) {
+                            objectMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
+                            break;
+                        }
+                    }
+                    /// Attribute - Name
+                    auto name_attr = person_info["person_name"];
+                    if (name_attr.is_string()) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Name", name_attr.string_value()));
+                    }
+
+                    /// Attribute - Group
+                    auto group_attr = person_info["group"];
+                    if (group_attr.is_array()) {
+                        auto groups = group_attr.array_items();
+                        std::vector<std::string> groupNames;
+                        std::transform(groups.begin(), groups.end(), std::back_inserter(groupNames), [](auto o) {
+                            return o.string_value();
+                        });
+                        std::string groupName = boost::algorithm::join(groupNames, ", ");
+                        objectMetadata->addAttribute(makePtr<Attribute>("Group", groupName));
+                    }
+
+                } while(0);
+
+                /// Add Value
+                objectMetadataPacket->addItem(objectMetadata.get());
             }
 
             double fps = std::min(frFPS, pdRecognitionFPS);

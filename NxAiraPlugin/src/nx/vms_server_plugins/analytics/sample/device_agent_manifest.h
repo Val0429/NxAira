@@ -19,9 +19,12 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
             "objectTypeId": "aira.ai.Person",
             "attributes":
             [
-                "Face",
-                "Face.Name",
-                "Face.Group",
+                "Name",
+                "Group",
+                "Registered",
+                "Stranger",
+                "Visitor",
+                "Watchlist",
                 "Color1",
                 "Color2",
                 "Color3",
@@ -34,7 +37,11 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
             "attributes":
             [
                 "Name",
-                "Group"
+                "Group",
+                "Registered",
+                "Stranger",
+                "Visitor",
+                "Watchlist"
             ]
         }
     ],)json" + /* Workaround for long strings. */ std::string() + R"json(
@@ -48,9 +55,28 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
                 "attributes":
                 [
                     {
-                        "name": "Face",
-                        "type": "Object",
-                        "subtype": "aira.ai.Face"
+                        "name": "Name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "Group",
+                        "type": "String"
+                    },
+                    {
+                        "name": "Registered",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Stranger",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Visitor",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Watchlist",
+                        "type": "Boolean"
                     },
                     {
                         "name": "Color1",
@@ -86,6 +112,22 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
                     {
                         "name": "Group",
                         "type": "String"
+                    },
+                    {
+                        "name": "Registered",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Stranger",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Visitor",
+                        "type": "Boolean"
+                    },
+                    {
+                        "name": "Watchlist",
+                        "type": "Boolean"
                     }
                 ]
             }
