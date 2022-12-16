@@ -272,7 +272,7 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
             // objectMetadataPacket->setDurationUs(2000000);
             
             const std::lock_guard<std::mutex> lock(pp_mutex);
-            pendingPackets.push_back(objectMetadataPacket.releasePtr());
+            pendingPackets.push_back(objectMetadataPacket);
         }   
     }
 }
@@ -281,7 +281,7 @@ bool DeviceAgent::pullMetadataPackets(std::vector<IMetadataPacket*>* metadataPac
     const std::lock_guard<std::mutex> lock(pp_mutex);
     
     while (pendingPackets.size() > 0) {
-        metadataPackets->push_back( pendingPackets.back() );
+        metadataPackets->push_back( pendingPackets.back().releasePtr() );
         pendingPackets.pop_back();
     }
 

@@ -52,7 +52,7 @@ protected:
 
 private:
     std::mutex pp_mutex;
-    std::vector<nx::sdk::analytics::IMetadataPacket*> pendingPackets;
+    std::vector<nx::sdk::Ptr<nx::sdk::analytics::IMetadataPacket>> pendingPackets;
     bool detectMotion(const nx::sdk::analytics::IUncompressedVideoFrame* videoPacket);
     nx::sdk::Uuid getUuidByString(const std::string& key);
     void handleDetectionData(nx::kit::Json data, int64_t timestamp);
