@@ -16,61 +16,81 @@ static const std::string kDeviceAgentManifest = /*suppress newline*/ 1 + (const 
     "supportedTypes":
     [
         {
-            "objectTypeId": "nx.base.Person",
+            "objectTypeId": "aira.ai.Person",
             "attributes":
             [
-                "Gender",
-                "Race",
-                "Age",
-                "Height",
-                "Activity",
-                "Hat",
-                "Hat.Color",
-                "Hat.Type",
-                "Scarf",
-                "Scarf.Color",
-                "Body Shape",
-                "Top Clothing Color",
-                "Top Clothing Length",
-                "Top Clothing Grain",
-                "Top Clothing Type",
-                "Bottom Clothing Color",
-                "Bottom Clothing Length",
-                "Bottom Clothing Grain",
-                "Bottom Clothing Type",
-                "Gloves",
-                "Gloves.Color",
-                "Shoes",
-                "Shoes.Color",
-                "Shoes.Type",
+                "Face",
+                "Face.Name",
+                "Face.Group",
+                "Color1",
+                "Color2",
+                "Color3",
+                "Color4",
+                "Color5"
+            ]
+        },
+        {
+            "objectTypeId": "aira.ai.Face",
+            "attributes":
+            [
                 "Name",
-                "Temperature",
-                "Tattoo",
-                "Bag",
-                "Bag.Size",
-                "Bag.Color",
-                "Bag.Type",
-                "Weapon",
-                "Cigarette",
-                "Cigarette.Type",
-                "Mobile Phone",
-                "Mobile Phone.Position",
-                "Cart",
-                "Cart.Type",
-                "Bottle",
-                "Umbrella",
-                "Umbrella.Color",
-                "Umbrella.Open",
-                "Box",
-                "Box.Color",
-                "Box.Lug",
-                "Mask",
-                "Glasses",
-                "Glasses.Type",
-                "Helmet"
+                "Group"
             ]
         }
-    ]
+    ],)json" + /* Workaround for long strings. */ std::string() + R"json(
+    "typeLibrary":
+    {
+        "objectTypes":
+        [
+            {
+                "id": "aira.ai.Person",
+                "name": "Person",
+                "attributes":
+                [
+                    {
+                        "name": "Face",
+                        "type": "Object",
+                        "subtype": "aira.ai.Face"
+                    },
+                    {
+                        "name": "Color1",
+                        "type": "Color"
+                    },
+                    {
+                        "name": "Color2",
+                        "type": "Color"
+                    },
+                    {
+                        "name": "Color3",
+                        "type": "Color"
+                    },
+                    {
+                        "name": "Color4",
+                        "type": "Color"
+                    },
+                    {
+                        "name": "Color5",
+                        "type": "Color"
+                    }
+                ]
+            },
+            {
+                "id": "aira.ai.Face",
+                "name": "Face",
+                "attributes":
+                [
+                    {
+                        "name": "Name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "Group",
+                        "type": "String"
+                    }
+                ]
+            }
+        ]
+    }
 }
 )json";
 

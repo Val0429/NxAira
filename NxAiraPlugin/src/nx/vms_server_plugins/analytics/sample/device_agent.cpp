@@ -226,7 +226,7 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                 /// get type: person / face
                 std::string type = item["type"].string_value();
                 if (type == "person") {
-                    objectMetadata->setTypeId("nx.base.Person");
+                    objectMetadata->setTypeId("aira.ai.Person");
                     auto& pos = item["body_position"];
                     double x = pos["x0"].number_value();
                     double y = pos["y0"].number_value();
@@ -239,7 +239,7 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     );
 
                 } else if (type == "face") {
-                    objectMetadata->setTypeId("nx.base.Face");
+                    objectMetadata->setTypeId("aira.ai.Face");
                     auto& pos = item["face_position"];
                     double x = pos["x0"].number_value();
                     double y = pos["y0"].number_value();
