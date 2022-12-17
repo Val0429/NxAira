@@ -49,6 +49,25 @@ void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDevice
         licenseUsed--;
     });
     licenseUsed++;
+    // auto licenseInfo = server.licenseHolder.getValue();
+    // bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
+    // if (!isNull) {
+    //     auto licenseCount = licenseInfo->value().count;
+    //     logger->info("license count: {}", std::to_string(licenseCount));
+
+    //     if (licenseCount > licenseUsed) {
+    //         *outResult = new DeviceAgent(deviceInfo, *this, [this]() {
+    //             licenseUsed--;
+    //         });
+    //         licenseUsed++;
+    //         return;
+    //     }
+    //     *outResult = nullptr;
+
+    // } else {
+    //     logger->info("is null");
+    //     *outResult = nullptr;
+    // }
 }
 
 /**

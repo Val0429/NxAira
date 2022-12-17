@@ -169,6 +169,274 @@ nx::sdk::Uuid DeviceAgent::getUuidByString(const std::string& key) {
     return uuidMapping[key];
 }
 
+// /// Face.Name Version
+// void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
+//     /* #region Data */
+//     // {
+//     //     "detect_uuid": "5b33418c-4a69-40c8-9e6a-56c7d36e5e24",
+//     //     "result": [
+//     /* #region Person */
+//     //         {
+//     //             "body_attributes": {
+//     //                 "has_backpack": false, "has_bag": false, "has_coat_jacket": false, "has_hat": false, "has_longhair": false, "has_longpants": true, "has_longsleeves": false, "is_male": true,
+//     //                 "top_5_colors": [{"color": "brown", "count": 4}, {"color": "yellow", "count": 3}, {"color": "red", "count": 2}, {"color": "orange", "count": 1}]
+//     //             },
+//     //             "body_position": {"x0": 0.75156199999999995, "x1": 0.87187499999999996, "y0": 0.122222, "y1": 0.70555599999999996},
+//     //             "body_uuid": "c9a2b84c-7b98-4041-93fd-e4d20baab802",
+//     //             "type": "person"
+//     //         },
+//     /* #endregion Person */
+//     /* #region Face - Stranger */
+//     //         {
+//     //             "face_position": {"x0": 0.24609400000000001, "x1": 0.26171899999999998, "y0": 0.63888900000000004, "y1": 0.66666700000000001},
+//     //             "face_uuid": "ea6916b9-376d-4a02-b0a9-0a6cbd8ca005",
+//     //             "is_registered_person": false,
+//     //             "type": "face"
+//     //         },
+//     /* #endregion Face - Stranger */
+//     /* #region Face - Recognize */
+//     //         {
+//     //             "face_position": {"x0": 0.32187500000000002, "x1": 0.45703100000000002, "y0": 0.065277799999999997, "y1": 0.30555599999999999},
+//     //             "face_uuid": "afa3fc3c-3409-4e7a-93d1-89c0d62c9724",
+//     //             "is_registered_person": true,
+//     //             "person_info": {
+//     //                 "group": ["All Visitor"],
+//     //                 "is_visitor": true,
+//     //                 "is_watchlist_1": false,
+//     //                 "is_watchlist_2": false,
+//     //                 "is_watchlist_3": true,
+//     //                 "is_watchlist_4": false,
+//     //                 "is_watchlist_5": false,
+//     //                 "person_id": "44103d96-5c5a-4f4b-b10a-a5e64fffd7a5",
+//     //                 "person_name": "SomeOne"
+//     //             },
+//     //             "type": "face"
+//     //         }
+//     //     ],
+//     //     "timestamp": 1671111000016
+//     // }
+//     /* #endregion Face - Recognize */
+//     /* #endregion Data */
+
+//     auto& results = data["result"];
+//     if (results.is_array()) {
+//         const std::vector<nx::kit::Json>& items = results.array_items();
+//         if (items.size() > 0) {
+//             auto objectMetadataPacket = makePtr<ObjectMetadataPacket>();
+
+//             for (auto it = items.cbegin(); it != items.cend(); ++it) {
+//                 auto objectMetadata = makePtr<ObjectMetadata>();
+//                 auto& item = *it;
+
+//                 /// get face attributes first
+//                 bool hasFace = item["face_uuid"].is_string();
+//                 double face_x, face_y, face_width, face_height;
+//                 bool is_registered, is_visitor, is_watchlist;
+//                 std::string face_name, face_group;
+//                 if (hasFace) {
+//                     auto& pos = item["face_position"];
+//                     face_x = pos["x0"].number_value();
+//                     face_y = pos["y0"].number_value();
+//                     face_width = pos["x1"].number_value() - face_x;
+//                     face_height = pos["y1"].number_value() - face_y;
+
+//                     /// Other Face Related Attributes
+//                     do {
+//                         /// Attribute - Registered
+//                         is_registered = item["is_registered_person"].bool_value();
+//                         auto person_info_attr = item["person_info"];
+//                         if (!person_info_attr.is_object()) break;
+//                         /// Attribute - Visitor
+//                         is_visitor = person_info_attr["is_visitor"].bool_value();
+//                         /// Attribute - Watchlist
+//                         for (int i=1; ;i++) {
+//                             auto isw_attr = person_info_attr["is_watchlist_" + std::to_string(i)];
+//                             if (!isw_attr.is_bool()) break;
+//                             if (isw_attr.bool_value()) {
+//                                 is_watchlist = true;
+//                                 break;
+//                             }
+//                         }
+//                         /// Attribute - Name
+//                         auto name_attr = person_info_attr["person_name"];
+//                         if (name_attr.is_string()) {
+//                             face_name = name_attr.string_value();
+//                         }
+
+//                         /// Attribute - Group
+//                         auto group_attr = person_info_attr["group"];
+//                         if (group_attr.is_array()) {
+//                             auto groups = group_attr.array_items();
+//                             std::vector<std::string> groupNames;
+//                             std::transform(groups.begin(), groups.end(), std::back_inserter(groupNames), [](auto o) {
+//                                 return o.string_value();
+//                             });
+//                             face_group = boost::algorithm::join(groupNames, ", ");
+//                         }
+
+//                     } while(0);
+//                 }
+
+//                 // /// create face object first
+//                 // auto faceMetadata = makePtr<ObjectMetadata>();
+//                 // auto face_uuid_attr = item["face_uuid"];
+//                 // if (!face_uuid_attr.is_string()) {
+//                 //     /// no face
+//                 //     faceMetadata.releasePtr();
+//                 // } else {
+//                 //     faceMetadata->setTypeId("aira.ai.Face");
+//                 //     auto& pos = item["face_position"];
+//                 //     double x = pos["x0"].number_value();
+//                 //     double y = pos["y0"].number_value();
+//                 //     double width = pos["x1"].number_value() - x;
+//                 //     double height = pos["y1"].number_value() - y;
+//                 //     faceMetadata->setBoundingBox(Rect(x, y, width, height));
+//                 //     faceMetadata->setTrackId(
+//                 //         // getUuidByString(item["face_uuid"].string_value())
+//                 //         UuidHelper::randomUuid()
+//                 //     );
+//                 // }
+
+//                 /// get type: person / face
+//                 std::string type = item["type"].string_value();
+//                 if (type == "person") {
+//                     objectMetadata->setTypeId("aira.ai.Person");
+//                     auto& pos = item["body_position"];
+//                     double x = pos["x0"].number_value();
+//                     double y = pos["y0"].number_value();
+//                     double width = pos["x1"].number_value() - x;
+//                     double height = pos["y1"].number_value() - y;
+//                     objectMetadata->setBoundingBox(Rect(x, y, width, height));
+//                     objectMetadata->setTrackId(
+//                         // getUuidByString(item["body_uuid"].string_value())
+//                         UuidHelper::randomUuid()
+//                     );
+
+//                     do {
+//                         auto bodyAttr = item["body_attributes"];
+//                         if (!bodyAttr.is_object()) break;
+//                         auto colorAttr = bodyAttr["top_5_colors"];
+//                         if (!colorAttr.is_array()) break;
+//                         auto colors = colorAttr.array_items();
+//                         std::sort(colors.begin(), colors.end(), [](auto a, auto b) {
+//                             return a["count"].number_value() < b["count"].number_value();
+//                         });
+//                         std::vector<std::string> colorNames;
+//                         std::transform(colors.begin(), colors.end(), std::back_inserter(colorNames), [](auto o) {
+//                             return o["color"].string_value();
+//                         });
+//                         /// add attributes
+//                         for (int i=1; i<=colorNames.size(); i++) {
+//                             objectMetadata->addAttribute(
+//                                 makePtr<Attribute>("Color"+std::to_string(i), colorNames[i-1])
+//                             );
+//                         }
+//                         /// add Face Attributes
+//                         objectMetadata->addAttribute(makePtr<Attribute>("Face.Name", face_name));
+//                         objectMetadata->addAttribute(makePtr<Attribute>("Face.Group", face_group));
+//                         if (is_registered) {
+//                             objectMetadata->addAttribute(makePtr<Attribute>("Face.Registered", "true"));
+//                         } else {
+//                             objectMetadata->addAttribute(makePtr<Attribute>("Face.Stranger", "true"));
+//                         }
+//                         if (is_visitor) objectMetadata->addAttribute(makePtr<Attribute>("Face.Visitor", "true"));
+//                         if (is_watchlist) objectMetadata->addAttribute(makePtr<Attribute>("Face.Watchlist", "true"));
+
+//                     } while(0);
+
+//                 } else if (type == "face") {
+//                     /// face only
+//                     objectMetadata->setTypeId("aira.ai.Face");
+//                     objectMetadata->setBoundingBox(Rect(face_x, face_y, face_width, face_height));
+//                     objectMetadata->setTrackId( UuidHelper::randomUuid() );
+
+//                     /// add Face Attributes
+//                     objectMetadata->addAttribute(makePtr<Attribute>("Name", face_name));
+//                     objectMetadata->addAttribute(makePtr<Attribute>("Group", face_group));
+//                     if (is_registered) {
+//                         objectMetadata->addAttribute(makePtr<Attribute>("Registered", "true"));
+//                     } else {
+//                         objectMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
+//                     }
+//                     if (is_visitor) objectMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
+//                     if (is_watchlist) objectMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
+
+//                 } else {
+//                     logger->error("Unknown type happens: {}", type);
+//                     return;
+//                 }
+
+//                 // /// Other Face Related Attributes
+//                 // bool hasFaceMeta = faceMetadata.get() != nullptr;
+//                 // do {
+//                 //     /// face not found
+//                 //     if (!item["is_registered_person"].is_bool()) break;
+//                 //     /// Attribute - Registered
+//                 //     bool is_registered = item["is_registered_person"].bool_value();
+//                 //     if (!is_registered) {
+//                 //         objectMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
+//                 //         if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
+//                 //         break;
+//                 //     }
+//                 //     faceMetadata->addAttribute(makePtr<Attribute>("Registered", "true"));
+
+//                 //     auto person_info = item["person_info"];
+//                 //     if (!person_info.is_object()) break;
+//                 //     /// Attribute - Visitor
+//                 //     if (person_info["is_visitor"].bool_value()) {
+//                 //         objectMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
+//                 //         if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
+//                 //     }
+//                 //     /// Attribute - Watchlist
+//                 //     for (int i=1; ;i++) {
+//                 //         auto isw_attr = person_info["is_watchlist_" + std::to_string(i)];
+//                 //         if (!isw_attr.is_bool()) break;
+//                 //         if (isw_attr.bool_value()) {
+//                 //             objectMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
+//                 //             if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
+//                 //             break;
+//                 //         }
+//                 //     }
+//                 //     /// Attribute - Name
+//                 //     auto name_attr = person_info["person_name"];
+//                 //     if (name_attr.is_string()) {
+//                 //         objectMetadata->addAttribute(makePtr<Attribute>("Name", name_attr.string_value()));
+//                 //         if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Name", name_attr.string_value()));
+//                 //     }
+
+//                 //     /// Attribute - Group
+//                 //     auto group_attr = person_info["group"];
+//                 //     if (group_attr.is_array()) {
+//                 //         auto groups = group_attr.array_items();
+//                 //         std::vector<std::string> groupNames;
+//                 //         std::transform(groups.begin(), groups.end(), std::back_inserter(groupNames), [](auto o) {
+//                 //             return o.string_value();
+//                 //         });
+//                 //         std::string groupName = boost::algorithm::join(groupNames, ", ");
+//                 //         objectMetadata->addAttribute(makePtr<Attribute>("Group", groupName));
+//                 //         if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Group", groupName));
+//                 //     }
+
+//                 // } while(0);
+
+//                 /// Add Value
+//                 objectMetadataPacket->addItem(objectMetadata.get());
+//             }
+
+//             double fps = std::min(frFPS, pdRecognitionFPS);
+//             double periodms = fps == 0 ? 0 : (1000/fps);
+//             objectMetadataPacket->setTimestampUs(timestamp);
+//             logger->info("timestamp! {} {}", timestamp, periodms);
+//             objectMetadataPacket->setDurationUs(periodms*1000);
+//             // objectMetadataPacket->setDurationUs(2000000);
+            
+//             const std::lock_guard<std::mutex> lock(pp_mutex);
+//             pendingPackets.push_back(objectMetadataPacket);
+//         }   
+//     }
+// }
+
+/// multi-write, face & person version
 void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
     /* #region Data */
     // {
@@ -227,8 +495,77 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                 auto objectMetadata = makePtr<ObjectMetadata>();
                 auto& item = *it;
 
+                /// get face attributes first
+                bool hasFace = item["face_uuid"].is_string();
+                double face_x, face_y, face_width, face_height;
+                bool is_registered, is_visitor, is_watchlist;
+                std::string face_name, face_group;
+                if (hasFace) {
+                    auto& pos = item["face_position"];
+                    face_x = pos["x0"].number_value();
+                    face_y = pos["y0"].number_value();
+                    face_width = pos["x1"].number_value() - face_x;
+                    face_height = pos["y1"].number_value() - face_y;
+
+                    /// Other Face Related Attributes
+                    do {
+                        /// Attribute - Registered
+                        is_registered = item["is_registered_person"].bool_value();
+                        auto person_info_attr = item["person_info"];
+                        if (!person_info_attr.is_object()) break;
+                        /// Attribute - Visitor
+                        is_visitor = person_info_attr["is_visitor"].bool_value();
+                        /// Attribute - Watchlist
+                        for (int i=1; ;i++) {
+                            auto isw_attr = person_info_attr["is_watchlist_" + std::to_string(i)];
+                            if (!isw_attr.is_bool()) break;
+                            if (isw_attr.bool_value()) {
+                                is_watchlist = true;
+                                break;
+                            }
+                        }
+                        /// Attribute - Name
+                        auto name_attr = person_info_attr["person_name"];
+                        if (name_attr.is_string()) {
+                            face_name = name_attr.string_value();
+                        }
+
+                        /// Attribute - Group
+                        auto group_attr = person_info_attr["group"];
+                        if (group_attr.is_array()) {
+                            auto groups = group_attr.array_items();
+                            std::vector<std::string> groupNames;
+                            std::transform(groups.begin(), groups.end(), std::back_inserter(groupNames), [](auto o) {
+                                return o.string_value();
+                            });
+                            face_group = boost::algorithm::join(groupNames, ", ");
+                        }
+
+                    } while(0);
+                }
+
+                /// create face object first
+                auto faceMetadata = makePtr<ObjectMetadata>();
+                if (!hasFace) {
+                    /// no face
+                    faceMetadata.releasePtr();
+                } else {
+                    faceMetadata->setTypeId("aira.ai.Face");
+                    auto& pos = item["face_position"];
+                    double x = pos["x0"].number_value();
+                    double y = pos["y0"].number_value();
+                    double width = pos["x1"].number_value() - x;
+                    double height = pos["y1"].number_value() - y;
+                    faceMetadata->setBoundingBox(Rect(x, y, width, height));
+                    faceMetadata->setTrackId(
+                        // getUuidByString(item["face_uuid"].string_value())
+                        UuidHelper::randomUuid()
+                    );
+                }
+
                 /// get type: person / face
                 std::string type = item["type"].string_value();
+                auto trackId = UuidHelper::randomUuid();
                 if (type == "person") {
                     objectMetadata->setTypeId("aira.ai.Person");
                     auto& pos = item["body_position"];
@@ -239,7 +576,7 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     objectMetadata->setBoundingBox(Rect(x, y, width, height));
                     objectMetadata->setTrackId(
                         // getUuidByString(item["body_uuid"].string_value())
-                        UuidHelper::randomUuid()
+                        trackId                        
                     );
 
                     do {
@@ -265,71 +602,52 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     } while(0);
 
                 } else if (type == "face") {
-                    objectMetadata->setTypeId("aira.ai.Face");
-                    auto& pos = item["face_position"];
-                    double x = pos["x0"].number_value();
-                    double y = pos["y0"].number_value();
-                    double width = pos["x1"].number_value() - x;
-                    double height = pos["y1"].number_value() - y;
-                    objectMetadata->setBoundingBox(Rect(x, y, width, height));
-                    objectMetadata->setTrackId(
-                        // getUuidByString(item["face_uuid"].string_value())
-                        UuidHelper::randomUuid()
-                    );
+                    objectMetadata = std::move(faceMetadata);
 
                 } else {
                     logger->error("Unknown type happens: {}", type);
                     return;
                 }
 
-                /// Generic Value
+                /// Other Face Related Attributes
+                bool hasFaceMeta = faceMetadata.get() != nullptr;
                 do {
-                    /// face not found
-                    if (!item["is_registered_person"].is_bool()) break;
                     /// Attribute - Registered
-                    bool is_registered = item["is_registered_person"].bool_value();
                     if (!is_registered) {
                         objectMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
+                        if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Stranger", "true"));
                         break;
                     }
                     objectMetadata->addAttribute(makePtr<Attribute>("Registered", "true"));
-
-                    auto person_info = item["person_info"];
-                    if (!person_info.is_object()) break;
+                    if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Registered", "true"));
                     /// Attribute - Visitor
-                    if (person_info["is_visitor"].bool_value()) {
+                    if (is_visitor) {
                         objectMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
+                        if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Visitor", "true"));
                     }
                     /// Attribute - Watchlist
-                    for (int i=1; ;i++) {
-                        auto isw_attr = person_info["is_watchlist_" + std::to_string(i)];
-                        if (!isw_attr.is_bool()) break;
-                        if (isw_attr.bool_value()) {
-                            objectMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
-                            break;
-                        }
+                    if (is_watchlist) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
+                        if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Watchlist", "true"));
                     }
                     /// Attribute - Name
-                    auto name_attr = person_info["person_name"];
-                    if (name_attr.is_string()) {
-                        objectMetadata->addAttribute(makePtr<Attribute>("Name", name_attr.string_value()));
+                    if (face_name.size() > 0) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Name", face_name));
+                        if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Name", face_name));
                     }
-
                     /// Attribute - Group
-                    auto group_attr = person_info["group"];
-                    if (group_attr.is_array()) {
-                        auto groups = group_attr.array_items();
-                        std::vector<std::string> groupNames;
-                        std::transform(groups.begin(), groups.end(), std::back_inserter(groupNames), [](auto o) {
-                            return o.string_value();
-                        });
-                        std::string groupName = boost::algorithm::join(groupNames, ", ");
-                        objectMetadata->addAttribute(makePtr<Attribute>("Group", groupName));
+                    if (face_group.size() > 0) {
+                        objectMetadata->addAttribute(makePtr<Attribute>("Group", face_group));
+                        if (hasFaceMeta) faceMetadata->addAttribute(makePtr<Attribute>("Group", face_group));
                     }
 
                 } while(0);
 
                 /// Add Value
+                if (hasFaceMeta) {
+                    // faceMetadata->setTrackId(trackId);
+                    objectMetadataPacket->addItem(faceMetadata.get());
+                }
                 objectMetadataPacket->addItem(objectMetadata.get());
             }
 

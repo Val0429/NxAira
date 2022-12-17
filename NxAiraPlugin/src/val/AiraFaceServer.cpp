@@ -23,7 +23,7 @@
 #define LICENSE_HEAD "[LICENSE] "
 #define DETECT_HEAD "[DETECT] "
 #define WS_HEAD "[WEBSOCKET]"
-#define DEBUG
+//#define DEBUG
 
 namespace val {
 
@@ -371,7 +371,7 @@ decltype(AiraFaceServer::licenseHolder.getFuture()) AiraFaceServer::getLicense()
         } while(0);
 
 #ifdef DEBUG
-        CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 2;
+        CLicenseInfo info; info.license = "8OGN-N8YM-B9MH-CP4K"; info.count = 1;
         res = info;
 #endif
         pushEvent(res.isOk() ? EventCode::GetLicenseSuccess : EventCode::GetLicenseFailed, res);
