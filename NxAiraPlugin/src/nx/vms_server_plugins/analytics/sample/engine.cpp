@@ -2,6 +2,7 @@
 
 #include "engine.h"
 #include "device_agent.h"
+#include "engine_manifest.h"
 #include "ini.h"
 
 #include <nx/kit/debug.h>
@@ -45,10 +46,9 @@ Engine::~Engine()
  *     model, etc.
  */
 void Engine::doObtainDeviceAgent(Result<IDeviceAgent*>* outResult, const IDeviceInfo* deviceInfo) {
-    *outResult = new DeviceAgent(deviceInfo, *this, [this]() {
+    *outResult = new DeviceAgent(deviceInfo, ++licenseUsed, *this, [this]() {
         licenseUsed--;
     });
-    licenseUsed++;
     // auto licenseInfo = server.licenseHolder.getValue();
     // bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
     // if (!isNull) {
@@ -101,14 +101,15 @@ std::string Engine::manifestString() const {
     "streamTypeFilter": "motion|uncompressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",
     "deviceAgentSettingsModel":
-)json" + getManifestModel() + R"json(
+)json" + getManifestModel(0) + R"json(
 }
 )json";
 }
 
-std::string Engine::getManifestModel() const {
+std::string Engine::getManifestModel(int licenseNum) const {
     auto licenseInfo = server.licenseHolder.getValue();
     bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
+    int licenseCount = (isNull ? 0 : licenseInfo->value().count);
 
     return /*suppress newline*/ 1 + (const char*) R"json(
     {
@@ -127,151 +128,12 @@ std::string Engine::getManifestModel() const {
                         "defaultValue": "opt1",
                         "range": ["opt1"],
                         "itemCaptions": {
-                            "opt1": ")json" + std::to_string(licenseUsed) + R"json( / )json" + (isNull ? "0" : std::to_string(licenseInfo->value().count)) + R"json("
+                            "opt1": ")json" + (isNull ? "No License" : std::to_string(licenseUsed)) + R"json( / )json" + std::to_string(licenseCount) + R"json("
                         }
                     }
                 ]
-            },
-            {
-                "type": "GroupBox",
-                "caption": "Facial Recognition",
-                "items": [
-                    {
-                        "type": "SwitchButton",
-                        "name": ")json" + kAirafaceEnableFacialRecognitionSetting + R"json(",
-                        "caption": "Enable Facial Recognition",
-                        "description": "Switch on to enable the facial recognition function",
-                        "defaultValue": false
-                    },
-                    {
-                        "type": "GroupBox",
-                        "caption": "Facial Recognition Setting",
-                        "items": [
-                            {
-                                "type": "SpinBox",
-                                "name": ")json" + kAirafaceFRMinimumFaceSizeSetting + R"json(",
-                                "caption": "Minimum Face Size",
-                                "description": "The minimum face size to detect. (0-150)",
-                                "defaultValue": 0,
-                                "minValue": 0,
-                                "maxValue": 150
-                            },
-                            {
-                                "type": "DoubleSpinBox",
-                                "name": ")json" + kAirafaceFRRecognitionScoreSetting + R"json(",
-                                "caption": "Recognition Score",
-                                "description": "The score to find correct person. The higher the more accurate. (0-1)",
-                                "defaultValue": 0.85,
-                                "minValue": 0,
-                                "maxValue": 1
-                            },
-                            {
-                                "type": "DoubleSpinBox",
-                                "name": ")json" + kAirafaceFRRecognitionFPSSetting + R"json(",
-                                "caption": "Recognition FPS",
-                                "description": "How many frame per seconds to recognize. (0.5-2)",
-                                "defaultValue": 0.5,
-                                "minValue": 0.5,
-                                "maxValue": 2
-                            }
-                        ]
-                    },
-                    {
-                        "type": "GroupBox",
-                        "caption": "Analytic Event Setting",
-                        "items": [
-                            {
-                                "type": "SwitchButton",
-                                "name": ")json" + kAirafaceFREventWatchlistSetting + R"json(",
-                                "caption": "Watchlist",
-                                "description": "",
-                                "defaultValue": true
-                            },
-                            {
-                                "type": "SwitchButton",
-                                "name": ")json" + kAirafaceFREventRegisteredSetting + R"json(",
-                                "caption": "Registered",
-                                "description": "",
-                                "defaultValue": true
-                            },
-                            {
-                                "type": "SwitchButton",
-                                "name": ")json" + kAirafaceFREventVisitorSetting + R"json(",
-                                "caption": "Visitor",
-                                "description": "",
-                                "defaultValue": true
-                            },
-                            {
-                                "type": "SwitchButton",
-                                "name": ")json" + kAirafaceFREventStrangerSetting + R"json(",
-                                "caption": "Stranger",
-                                "description": "",
-                                "defaultValue": true
-                            }
-                        ]
-                    }  
-                ]               
-            },
-            {
-                "type": "GroupBox",
-                "caption": "Person Detection",
-                "items":
-                [
-                    {
-                        "type": "SwitchButton",
-                        "name": ")json" + kAirafaceEnablePersonDetectionSetting + R"json(",
-                        "caption": "Enable Person Detection",
-                        "description": "Switch on to enable the person detection function",
-                        "defaultValue": false
-                    },
-                    {
-                        "type": "GroupBox",
-                        "caption": "Person Detection Setting",
-                        "items": [
-                            {
-                                "type": "SpinBox",
-                                "name": ")json" + kAirafacePDMinimumBodySizeSetting + R"json(",
-                                "caption": "Minimum Body Size",
-                                "description": "The minimum body size to detect. (0-150)",
-                                "defaultValue": 0,
-                                "minValue": 0,
-                                "maxValue": 150
-                            },
-                            {
-                                "type": "DoubleSpinBox",
-                                "name": ")json" + kAirafacePDDetectionScoreSetting + R"json(",
-                                "caption": "Detection Score",
-                                "description": "The score to detect correct person. The higher the more accurate. (0-1)",
-                                "defaultValue": 0.5,
-                                "minValue": 0,
-                                "maxValue": 1
-                            },
-                            {
-                                "type": "DoubleSpinBox",
-                                "name": ")json" + kAirafacePDRecognitionFPSSetting + R"json(",
-                                "caption": "Recognition FPS",
-                                "description": "How many frame per seconds to detect. (0.5-2)",
-                                "defaultValue": 0.5,
-                                "minValue": 0.5,
-                                "maxValue": 2
-                            }
-                        ]
-                    },
-                    {
-                        "type": "GroupBox",
-                        "caption": "Analytic Event Setting",
-                        "items": [
-                            {
-                                "type": "SwitchButton",
-                                "name": ")json" + kAirafacePDEventPersonDetectionSetting + R"json(",
-                                "caption": "Person Detection",
-                                "description": "",
-                                "defaultValue": true
-                            }
-                        ]
-                    }
-                ]
-            }            
+            }
+            )json" + ((!isNull && licenseCount>=licenseNum) ? kEngineDetailManifest : "") + R"json(
         ]
     }
 )json";

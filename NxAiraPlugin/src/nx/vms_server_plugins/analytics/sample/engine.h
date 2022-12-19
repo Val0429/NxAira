@@ -27,7 +27,7 @@ protected:
     virtual nx::sdk::Result<const nx::sdk::ISettingsResponse*> settingsReceived() override;
     virtual void getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const override;
 public:
-    std::string getManifestModel() const;
+    std::string getManifestModel(int licenseNum) const;
 
 protected:
     virtual void doObtainDeviceAgent(

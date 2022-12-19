@@ -27,8 +27,9 @@ class DeviceAgent: public nx::sdk::analytics::ConsumingDeviceAgent {
 private:
     nx::vms_server_plugins::analytics::aira::Engine& engine;
     std::function<void(void)> doUnref;
+    int licenseNum;
 public:
-    DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref);
+    DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, int licenseNum, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref);
     virtual ~DeviceAgent() override;
 
 protected:

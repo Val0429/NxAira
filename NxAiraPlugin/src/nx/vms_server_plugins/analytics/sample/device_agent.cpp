@@ -35,10 +35,11 @@ namespace aira {
 using namespace nx::sdk;
 using namespace nx::sdk::analytics;
 
-DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
+DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, int licenseNum, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
     engine(engine),
     doUnref(std::move(doUnref)),
+    licenseNum(licenseNum),
     logger(CreateLogger("DeviceAgent")),
     motionProvider(*this)
     {}
@@ -91,7 +92,7 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
     logger->info("PD Event detection? {}", pdEventPersonDetection);
 
     const auto settingsResponse = new nx::sdk::SettingsResponse();
-    settingsResponse->setModel(engine.getManifestModel());
+    settingsResponse->setModel(engine.getManifestModel(licenseNum));
     pushManifest(manifestString());
 
     return settingsResponse;
@@ -99,7 +100,7 @@ Result<const ISettingsResponse*> DeviceAgent::settingsReceived() {
 void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettingsResponse*>* outResult) const {
     /// updating immediately
     auto settingsResponse = new SettingsResponse();
-    settingsResponse->setModel(engine.getManifestModel());
+    settingsResponse->setModel(engine.getManifestModel(licenseNum));
     *outResult = settingsResponse;
 }
 
@@ -110,6 +111,14 @@ void DeviceAgent::getPluginSideSettings(nx::sdk::Result<const nx::sdk::ISettings
 bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* videoFrame) {    
     /// one should be enabled to detect
     if (!enableFacialRecognition && !enablePersonDetection) return true;
+    
+    /// check license
+    auto licenseInfo = engine.server.licenseHolder.getValue();
+    bool isNull = licenseInfo == nullptr || !licenseInfo->isOk();
+    if (isNull) return true;    /// license not ready
+    auto licenseCount = licenseInfo->value().count;
+    if (licenseNum>licenseCount) return true;   /// license exceed
+
     /// determine FPS
     double fps = std::min(frFPS, pdRecognitionFPS);
     double periodms = fps == 0 ? 0 : (1000/fps);
