@@ -56,6 +56,7 @@ public:
     rxcpp::observable<std::shared_ptr<MessageType>> getObservable() {
         return subject.get_observable();
     }
+    /// Val: thread-safe?
     std::shared_ptr<MessageType> getValue() const {
         return subject.get_value();
     }

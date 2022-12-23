@@ -77,6 +77,7 @@ public:
     bool isOk() const { return m_error.isOk(); }
 
     const Error& error() const { return m_error; }
+    /// Val: thread safed
     Value value() const { return m_value; }
 
     /// string conversion
