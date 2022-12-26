@@ -67,24 +67,43 @@ conan_cmake_configure(REQUIRES opencv/4.5.5
     OPTIONS ${OPENCV_OPTIONS}
     SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
 )
-# Boost
-conan_cmake_configure(REQUIRES boost/1.70.0
-    GENERATORS cmake_find_package
-)
-# libBase64
-conan_cmake_configure(REQUIRES base64/0.5.0
-    GENERATORS cmake_find_package
-)
-# ixwebsocket
-conan_cmake_configure(REQUIRES ixwebsocket/11.4.3
-    GENERATORS cmake_find_package
-)
 # install
 conan_cmake_install(PATH_OR_REFERENCE .
     OPTIONS ${OPENCV_OPTIONS}
     SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
     BUILD missing
 )
+
+# Boost
+conan_cmake_configure(REQUIRES boost/1.70.0
+    GENERATORS cmake_find_package
+)
+# install
+conan_cmake_install(PATH_OR_REFERENCE .
+    SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
+    BUILD missing
+)
+
+# libBase64
+conan_cmake_configure(REQUIRES base64/0.5.0
+    GENERATORS cmake_find_package
+)
+# install
+conan_cmake_install(PATH_OR_REFERENCE .
+    SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
+    BUILD missing
+)
+
+# ixwebsocket
+conan_cmake_configure(REQUIRES ixwebsocket/11.4.3
+    GENERATORS cmake_find_package
+)
+# install
+conan_cmake_install(PATH_OR_REFERENCE .
+    SETTINGS ${CONAN_VS_RUNTIME_MT_SETTING}
+    BUILD missing
+)
+
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Base64 REQUIRED)
