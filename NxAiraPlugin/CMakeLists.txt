@@ -106,7 +106,7 @@ conan_cmake_install(PATH_OR_REFERENCE .
 
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Base64 REQUIRED)
+find_package(base64 REQUIRED)
 find_package(ixwebsocket REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
