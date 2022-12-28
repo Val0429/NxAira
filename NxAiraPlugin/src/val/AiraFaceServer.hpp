@@ -141,19 +141,19 @@ private:
     template<typename Value>
     void pushEvent(EventCode code, val::Result<Value>& o) {
         switch (code) {
-            case EventCode::LoginSuccess: { engine->pushEvent(IPluginDiagnosticEvent::Level::info, "Login", "AiraFace Server successfully."); break; }
-            case EventCode::LoginFailed: { engine->pushEvent(IPluginDiagnosticEvent::Level::info, "Login Failed", o); break; }
+            case EventCode::LoginSuccess: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::info, "Login", "AiraFace Server successfully."); break; }
+            case EventCode::LoginFailed: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::info, "Login Failed", o); break; }
             case EventCode::MaintainSuccess:
             case EventCode::MaintainFailed:
                 break;
-            case EventCode::GetLicenseSuccess: { engine->pushEvent(IPluginDiagnosticEvent::Level::info, "Get License", o); break; }
-            case EventCode::GetLicenseFailed: { engine->pushEvent(IPluginDiagnosticEvent::Level::info, "Get License Failed", o); break; }
+            case EventCode::GetLicenseSuccess: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::info, "Get License", o); break; }
+            case EventCode::GetLicenseFailed: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::info, "Get License Failed", o); break; }
             case EventCode::DetectSuccess: { break; }
-            case EventCode::DetectFailed: { engine->pushEvent(IPluginDiagnosticEvent::Level::info, "Detect Failed", o); break; }
+            case EventCode::DetectFailed: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::info, "Detect Failed", o); break; }
             case EventCode::SetLicenseSuccess:
             case EventCode::SetLicenseFailed:
                 break;
-            default: { engine->pushEvent(IPluginDiagnosticEvent::Level::error, "Unknown Error", o); break; }
+            default: { engine->pushEvent(nx::sdk::IPluginDiagnosticEvent::Level::error, "Unknown Error", o); break; }
         }
     }
 };
