@@ -5,6 +5,7 @@
 #include <vector>
 #include <string_view>
 #include <stdexcept>
+#include <cmath>
 
 #include <boost/beast/core/span.hpp>
 #include <libbase64.h>
@@ -35,7 +36,7 @@ private:
         }
         size -= mimeSize;
 
-        estimatelen = ceil((float)size/4)*3;
+        estimatelen = std::ceil((float)size/4)*3;
     }
 
     template<typename T>
@@ -92,7 +93,7 @@ private:
     inline static void encode_shared_impl(const std::string_view& input, const std::string& mime, bool& withMime, size_t& size, size_t& mimeSize, size_t& estimatelen) {
         // auto src = input.data();
         size = input.size();
-        size_t len = ceil((float)size/3)*4;
+        size_t len = std::ceil((float)size/3)*4;
         mimeSize = mime.size();
         withMime = mimeSize > 0;
         if (withMime) mimeSize += BASE64CORESIZE;

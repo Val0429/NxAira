@@ -13,7 +13,7 @@
 #include <mutex>
 
 #include <nx/kit/json.h>
-#include <nx/kit/debug.h>
+#include <nx/sdk/i_plugin_diagnostic_event.h>
 
 #include <ixwebsocket/IXWebSocket.h>
 #include "rxcpp/rx.hpp"
