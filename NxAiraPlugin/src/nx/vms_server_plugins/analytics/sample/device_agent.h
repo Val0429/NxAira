@@ -78,7 +78,7 @@ private:
 
 private:
     DeviceAgentMotionFaceProvider motionProvider;
-    std::chrono::steady_clock::time_point lastTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
 };
 
 } // namespace sample
