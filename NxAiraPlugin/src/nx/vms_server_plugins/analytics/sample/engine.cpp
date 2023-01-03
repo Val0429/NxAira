@@ -133,11 +133,12 @@ std::string Engine::getManifestModel(int licenseNum) const {
                     }
                 ]
             }
-            )json" + ((!isNull && licenseCount>=licenseNum) ? kEngineDetailManifest : "") + R"json(
+            )json" + kEngineDetailManifest + R"json(
         ]
     }
 )json";
 }
+            // )json" + ((!isNull && licenseCount>=licenseNum) ? kEngineDetailManifest : "") + R"json(
 
 Result<const ISettingsResponse*> Engine::settingsReceived() {
     this->logger->info("Handle Plugin Setting...");
