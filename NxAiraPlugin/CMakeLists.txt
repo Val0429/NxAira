@@ -188,7 +188,11 @@ target_link_libraries(NxAiraPlugin
     base64::base64
     ixwebsocket::ixwebsocket
 )
-target_compile_options(NxAiraPlugin PRIVATE -wd4566 -wd4819)
+if(WIN32)
+    target_compile_options(NxAiraPlugin PRIVATE -wd4566 -wd4819)
+else()
+    target_compile_options(NxAiraPlugin PRIVATE)
+endif()
 target_compile_definitions(NxAiraPlugin
     PRIVATE NX_PLUGIN_API=${API_EXPORT_MACRO}
 )
