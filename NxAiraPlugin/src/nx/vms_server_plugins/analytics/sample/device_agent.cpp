@@ -38,6 +38,7 @@ using namespace nx::sdk::analytics;
 DeviceAgent::DeviceAgent(const nx::sdk::IDeviceInfo* deviceInfo, int licenseNum, nx::vms_server_plugins::analytics::aira::Engine& engine, std::function<void(void)>&& doUnref):
     ConsumingDeviceAgent(deviceInfo, /*enableOutput*/ true),
     engine(engine),
+    deviceId(std::string(deviceInfo->id())),
     doUnref(std::move(doUnref)),
     licenseNum(licenseNum),
     logger(CreateLogger("DeviceAgent")),
@@ -151,7 +152,7 @@ bool DeviceAgent::pushUncompressedVideoFrame(const IUncompressedVideoFrame* vide
                 pdMinimumBodySize,
                 pdDetectionScore
             );
-            logger->info("Match detect! {}", res->get().toString());
+            logger->info("Match detect! [{}] {}", this->deviceId, res->get().toString());
             this->handleDetectionData(res->get().value().json, timestamp);
         }).detach();
     }

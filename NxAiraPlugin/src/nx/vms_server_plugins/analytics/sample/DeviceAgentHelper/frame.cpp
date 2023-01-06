@@ -58,7 +58,7 @@ std::vector<uchar> Frame::getBuffer() {
 }
 
 std::string Frame::getBase64String() {
-    auto& buf = getBuffer();
+    const auto& buf = getBuffer();
     std::string base64_string = ValBase64::Encode<std::string>(buf, "");
     return base64_string;
 }

@@ -26,6 +26,7 @@ class Engine;
 class DeviceAgent: public nx::sdk::analytics::ConsumingDeviceAgent {
 private:
     nx::vms_server_plugins::analytics::aira::Engine& engine;
+    std::string deviceId;
     std::function<void(void)> doUnref;
     int licenseNum;
 public:

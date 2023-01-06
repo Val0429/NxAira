@@ -39,7 +39,7 @@ set(OPENCV_OPTIONS
     opencv:with_jpeg=libjpeg-turbo 
     opencv:with_png=True
     opencv:with_tiff=False
-    opencv:with_jpeg2000=openjpeg
+    opencv:with_jpeg2000=False
     opencv:with_openexr=False
     opencv:with_eigen=False
     opencv:with_webp=True
@@ -177,11 +177,13 @@ target_include_directories(NxAiraPlugin PRIVATE
     ${SPDLOG_SRC_DIR}
     ${LIB_DIR}
     ${BASIC_SRC_DIR}
+    ${CONAN_INCLUDE_LIBS}
 )
 set(CMAKE_EXE_LINKER_FLAGS " -static")
 target_link_libraries(NxAiraPlugin
     nx_kit
     nx_sdk
+    ${CONAN_LIBS}
     opencv::core opencv::flann opencv::imgproc opencv::imgcodecs opencv::dnn opencv::opencv_dnn opencv::ml 
     opencv::plot opencv::opencv_features2d opencv::opencv_calib3d opencv::datasets opencv::video opencv::tracking
     Boost::boost Boost::thread
