@@ -96,7 +96,7 @@ static std::string buildCapabilities() {
 std::string Engine::manifestString() const {
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "vendor": "Aira Corporation",
     "streamTypeFilter": "motion|uncompressedVideo",
     "capabilities": ")json" + buildCapabilities() + R"json(",

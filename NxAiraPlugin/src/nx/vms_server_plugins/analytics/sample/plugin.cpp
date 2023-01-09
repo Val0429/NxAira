@@ -37,7 +37,7 @@ std::string Plugin::manifestString() const
     "id": ")json" + instanceId() + R"json(",
     "name": "Aira x NX metadata",
     "description": "Aira Plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "vendor": "Aira Corporation",
     "engineSettingsModel":
     {
