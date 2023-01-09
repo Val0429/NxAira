@@ -218,6 +218,7 @@ void AiraFaceServer::InitWebSocket() {
     /// reconnect
     webSocket.setMinWaitBetweenReconnectionRetries(1000);
     webSocket.enableAutomaticReconnection();
+    webSocket.setPingInterval(20);
 
     /// connect websocket
     logger->info("Web socket connection start");
