@@ -529,6 +529,7 @@ R"json(
                 logger->info("{}{}", msg_success, jsonString);
                 CDetectInfo info;
                 info.detect_uuid = json["detect_uuid"].string_value();
+                //logger->info("detect_uuid: {}\r\n{}", info.detect_uuid, base64_image);
 
                 /// wait for the response
                 std::promise<void> ready;

@@ -575,7 +575,7 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
 
                 /// get type: person / face
                 std::string type = item["type"].string_value();
-                auto trackId = UuidHelper::randomUuid();
+                // auto trackId = UuidHelper::randomUuid();
                 if (type == "person") {
                     objectMetadata->setTypeId("aira.ai.Person");
                     auto& pos = item["body_position"];
@@ -585,8 +585,8 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                     double height = pos["y1"].number_value() - y;
                     objectMetadata->setBoundingBox(Rect(x, y, width, height));
                     objectMetadata->setTrackId(
-                        // getUuidByString(item["body_uuid"].string_value())
-                        trackId                        
+                        getUuidByString(item["body_uuid"].string_value())
+                        // trackId                        
                     );
 
                     do {
@@ -656,6 +656,9 @@ void DeviceAgent::handleDetectionData(nx::kit::Json data, int64_t timestamp) {
                 /// Add Value
                 if (hasFaceMeta) {
                     // faceMetadata->setTrackId(trackId);
+                    faceMetadata->setTrackId(
+                        getUuidByString(item["face_uuid"].string_value())
+                    );
                     objectMetadataPacket->addItem(faceMetadata.get());
                 }
                 objectMetadataPacket->addItem(objectMetadata.get());
