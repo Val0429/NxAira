@@ -5,8 +5,8 @@
 #include <string>
 
 #define SET_PARSE std::string("Airaface")
-#define DEF_HOST "211.75.111.228"
-#define DEF_PORT "82"
+#define DEF_HOST ""
+#define DEF_PORT "8080"
 #define DEF_ACCOUNT "Admin"
 
 namespace nx {

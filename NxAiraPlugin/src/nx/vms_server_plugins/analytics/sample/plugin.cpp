@@ -35,10 +35,10 @@ std::string Plugin::manifestString() const
     return /*suppress newline*/ 1 + (const char*) R"json(
 {
     "id": ")json" + instanceId() + R"json(",
-    "name": "Aira x NX metadata",
+    "name": "airaMetadata",
     "description": "Aira Plugin",
     "version": "1.0.1",
-    "vendor": "Aira Corporation",
+    "vendor": "AIRA Corporation",
     "engineSettingsModel":
     {
         "type": "Settings",
@@ -46,7 +46,7 @@ std::string Plugin::manifestString() const
         [
             {
                 "type": "GroupBox",
-                "caption": "AiraFace License",
+                "caption": "airaMetadata License",
                 "items":
                 [
                     {
@@ -59,7 +59,7 @@ std::string Plugin::manifestString() const
             },
             {
                 "type": "GroupBox",
-                "caption": "AiraFace Configuration",
+                "caption": "airaMetadata Server Information",
                 "items":
                 [
                     {
@@ -79,8 +79,8 @@ std::string Plugin::manifestString() const
                     {
                         "type": "TextField",
                         "name": ")json" + kAirafaceAccountSetting + R"json(",
-                        "caption": ")json" + DEF_ACCOUNT + R"json(",
-                        "defaultValue": "Admin"
+                        "caption": "Account",
+                        "defaultValue": ")json" + DEF_ACCOUNT + R"json("
                     },
                     {
                         "type": "TextField",
