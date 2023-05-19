@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 project(NxAiraPlugin)
 
-set(metadataSdkDir "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk" CACHE PATH "C:/nxwitness-metadata_sdk-5.0.0.35136-universal/metadata_sdk")
+set(metadataSdkDir "~/NxAira/SDK/metadata_sdk/" CACHE PATH "~/NxAira/SDK/metadata_sdk")
 if(metadataSdkDir STREQUAL "")
     set(metadataSdkDir ${CMAKE_CURRENT_LIST_DIR}/../..) #< Assume building samples inside the SDK.
     if(NOT EXISTS ${metadataSdkDir}/src/nx/sdk OR NOT EXISTS ${metadataSdkDir}/nx_kit/src/nx/kit)
